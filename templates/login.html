@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - AlgoPlay</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+  <style>
+    .star-field {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #0C0A1A;
+        overflow: hidden;
+        z-index: -2; /* Behind the login container */
+    }
+    .star {
+        position: absolute; background: white; border-radius: 50%;
+        animation: twinkle linear infinite;
+    }
+    @keyframes twinkle {
+        0%, 100% { transform: scale(0.5); opacity: 0.5; }
+        50% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+{% if error %}
+  <p style="color: red; text-align: center;">{{ error }}</p>
+{% endif %}
+{% if success %}
+  <p style="color: limegreen; text-align: center;">{{ success }}</p>
+<div id="star-field" class="star-field"></div>
+{% endif %}
+<div class="container" id="container">
+  <!-- ✅ Sign Up Form -->
+  <div class="form-container sign-up-container">
+    <form id="signup-form" method="POST" action="/login">
+      <h1>Create Account</h1>
+      <input type="text" name="name" placeholder="Full Name" required />
+      <input type="text" name="username" placeholder="Username" required />
+      <small style="color: #ccc; display: block; margin-bottom: 10px;">Username must be at least 6 characters & contain a digit.</small>
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <select name="gender" required>
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+      <button type="submit">Sign Up</button>
+    </form>
+  </div>
+  <!-- ✅ Sign In Form -->
+  <div class="form-container sign-in-container">
+    <form id="login-form" method="POST" action="/login">
+      <h1>Sign in</h1>
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <button type="submit">Sign In</button>
+    </form>
+  </div>
+  <!-- ✅ Overlay panels -->
+  <div class="overlay-container">
+    <div class="overlay">
+      <div class="overlay-panel overlay-left">
+        <h1 id="black">Welcome Back!</h1>
+        <p>To stay connected please log in with your details</p>
+        <button class="ghost" id="signIn">Sign In</button>
+      </div>
+      <div class="overlay-panel overlay-right">
+        <h1 id="black">Hello, Friend!</h1>
+        <p>Enter your details and start your journey with us</p>
+        <button class="ghost" id="signUp">Sign Up</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div style="text-align: center; margin-top: 20px;">
+  <a href="/" style="
+    display: inline-block;
+    padding: 10px 20px;
+    background: #00ff00;
+    color: #000;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;">
+     Back to Dashboard
+  </a>
+</div>
+<script>
+  const signUpButton = document.getElementById('signUp');
+  const signInButton = document.getElementById('signIn');
+  const container = document.getElementById('container');
+  signUpButton.addEventListener('click', () => {
+    container.classList.add("right-panel-active");
+  });
+  signInButton.addEventListener('click', () => {
+    container.classList.remove("right-panel-active");
+  });
+
+  // Starfield animation
+  const starField = document.getElementById('star-field');
+  if (starField && !starField.hasChildNodes()) {
+      for (let i = 0; i < 200; i++) {
+          const star = document.createElement('div');
+          star.className = 'star';
+          const size = Math.random() * 3;
+          star.style.width = `${size}px`;
+          star.style.height = `${size}px`;
+          star.style.top = `${Math.random() * 100}%`;
+          star.style.left = `${Math.random() * 100}%`;
+          star.style.animationDuration = `${2 + Math.random() * 3}s`;
+          star.style.animationDelay = `${Math.random() * 5}s`;
+          starField.appendChild(star);
+      }
+  }
+</script>
+</body>
+</html>

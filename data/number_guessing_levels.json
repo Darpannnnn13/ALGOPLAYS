@@ -1,0 +1,23 @@
+{
+  "easy": {
+    "1": { "range": [1, 50], "number": 37, "max_guesses": 8 },
+    "2": { "range": [1, 50], "number": 12, "max_guesses": 8 },
+    "3": { "range": [1, 50], "number": 25, "max_guesses": 8 },
+    "4": { "range": [1, 50], "number": 48, "max_guesses": 8 },
+    "5": { "range": [1, 50], "number": 5, "max_guesses": 8 }
+  },
+  "medium": {
+    "1": { "range": [1, 100], "number": 88, "max_guesses": 10 },
+    "2": { "range": [1, 100], "number": 19, "max_guesses": 10 },
+    "3": { "range": [1, 100], "number": 52, "max_guesses": 10 },
+    "4": { "range": [1, 100], "number": 73, "max_guesses": 10 },
+    "5": { "range": [1, 100], "number": 99, "max_guesses": 10 }
+  },
+  "hard": {
+    "1": { "range": [1, 500], "number": 345, "max_guesses": 12 },
+    "2": { "range": [1, 500], "number": 123, "max_guesses": 12 },
+    "3": { "range": [1, 500], "number": 489, "max_guesses": 12 },
+    "4": { "range": [1, 500], "number": 250, "max_guesses": 12 },
+    "5": { "range": [1, 500], "number": 7, "max_guesses": 12 }
+  }
+}

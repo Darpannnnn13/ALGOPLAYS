@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Select Level for {{ game_name.replace('_', ' ').title() }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', sans-serif; }
+        .title-font { font-family: 'Orbitron', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-6">
+
+    <h1 class="text-3xl font-bold text-green-400 mb-2 title-font">Select a Level to Edit</h1>
+    <h2 class="text-xl text-gray-400 mb-8">Game: {{ game_name.replace('_', ' ').title() }}</h2>
+
+    <div class="mb-8">
+        <a href="{{ url_for('admin_games') }}" class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-500 transition-colors">&larr; Back to Game Management</a>
+    </div>
+
+    <div class="space-y-8">
+        {% for difficulty in ['easy', 'medium', 'hard'] %}
+            {% if levels[difficulty] %}
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold text-{{ {'easy': 'green', 'medium': 'yellow', 'hard': 'red'}[difficulty] }}-400 mb-4">{{ difficulty.capitalize() }}</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                        {% for level_num in levels[difficulty].keys() %}
+                            <a href="{{ url_for('admin_edit_level', game_name=game_name, difficulty=difficulty, level=level_num) }}"
+                               class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 px-2 rounded text-center transition">
+                                Level {{ level_num }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+</body>
+</html>

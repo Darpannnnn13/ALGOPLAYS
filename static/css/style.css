@@ -1,0 +1,54 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  .container {
+    display: flex;
+  }
+  
+  .sidebar {
+    width: 200px;
+    background: #333;
+    color: #fff;
+    height: 100vh;
+    padding: 20px;
+  }
+  
+  .sidebar button {
+    display: block;
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 10px;
+    background: #555;
+    border: none;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .sidebar button:hover {
+    background: #777;
+  }
+  
+  .content {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(10, 30px);
+    grid-template-rows: repeat(10, 30px);
+    gap: 2px;
+  }
+  
+  .cell {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+  }
+  .cell.wall {
+    background: #000;
+  }
+  

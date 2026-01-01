@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Games - AlgoPlay</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: transparent; font-family: 'Roboto', sans-serif; }
+        .title-font { font-family: 'Orbitron', sans-serif; }
+        .star-field {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0C0A1A;
+            overflow: hidden;
+            z-index: -1;}
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle linear infinite;}
+        @keyframes twinkle {
+            0%, 100% { transform: scale(0.5); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 1; }}
+        .game-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;}
+        .game-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 10px 30px rgba(0, 255, 135, 0.2);}
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+<div id="star-field" class="star-field"></div>
+<header class="fixed top-0 left-0 w-full backdrop-blur-md bg-gray-900/50 border-b border-green-500/20 z-50">
+  <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center px-4 py-4">
+    <a href="{{ url_for('home') }}" class="text-2xl font-bold text-green-400 title-font">AlgoPlay</a>
+    <nav class="flex flex-wrap items-center gap-6">
+      <a href="{{ url_for('home') }}" class="hover:text-green-400">Home</a>
+      <a href="{{ url_for('games') }}" class="hover:text-green-400 text-green-400 font-bold">Games</a>
+      <a href="{{ url_for('leaderboard') }}" class="hover:text-green-400">Leaderboard</a>
+      <a href="{{ url_for('about') }}" class="hover:text-green-400">About</a>
+      {% if user %}
+        <div onclick="toggleProfilePanel()" class="w-10 h-10 flex items-center justify-center rounded-full bg-green-400 text-black font-bold cursor-pointer">
+          {{ user.name[0]|upper }}
+        </div>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="px-4 py-2 rounded bg-green-400 text-black font-bold hover:bg-green-300 transition">
+          Login/Register
+        </a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+<main class="relative z-10 pt-28 max-w-7xl mx-auto px-4 pb-16">
+    <h1 class="title-font text-4xl font-bold text-center text-green-400 mb-12">Game Universe</h1>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <a href="/maze_solver" class="game-card bg-gray-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-green-500/20">
+            <img src="{{ url_for('static', filename='images/maze_solver.webp') }}" alt="Maze Solver" class="w-full h-40 object-cover">
+            <div class="p-4">
+                <h2 class="text-xl font-bold mb-2 text-green-400">Maze Solver</h2>
+                <p class="text-gray-300 text-sm">Find the shortest path through complex, solvable mazes.</p>
+            </div>
+        </a>
+        <a href="/puzzle" class="game-card bg-gray-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-green-500/20">
+            <img src="{{ url_for('static', filename='images/8puzzle.png') }}" alt="Puzzle-8 Solver" class="w-full h-40 object-cover">
+            <div class="p-4">
+                <h2 class="text-xl font-bold mb-2 text-green-400">Puzzle-8 Solver</h2>
+                <p class="text-gray-300 text-sm">Slide the tiles to arrange the numbers back in order.</p>
+            </div>
+        </a>
+        <a href="/sudoku" class="game-card bg-gray-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-green-500/20">
+            <img src="{{ url_for('static', filename='images/sudoku.jpg') }}" alt="Sudoku Solver" class="w-full h-40 object-cover">
+            <div class="p-4">
+                <h2 class="text-xl font-bold mb-2 text-green-400">Sudoku</h2>
+                <p class="text-gray-300 text-sm">Challenge your logic by filling every row, column, and box.</p>
+            </div>
+        </a>
+        <a href="/word_search" class="game-card bg-gray-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-green-500/20">
+            <img src="{{ url_for('static', filename='images/word_search.png') }}" alt="Word Search" class="w-full h-40 object-cover">
+            <div class="p-4">
+                <h2 class="text-xl font-bold mb-2 text-green-400">Word Search</h2>
+                <p class="text-gray-300 text-sm">Find hidden words in a grid to test your focus and speed.</p>
+            </div>
+        </a>
+        <a href="/number_guessing" class="game-card bg-gray-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-green-500/20">
+            <img src="{{ url_for('static', filename='images/number_guessing.png') }}" alt="Number Guessing" class="w-full h-40 object-cover">
+            <div class="p-4">
+                <h2 class="text-xl font-bold mb-2 text-green-400">Number Guessing</h2>
+                <p class="text-gray-300 text-sm">Guess the secret number with hints at each step.</p>
+            </div>
+        </a>
+        <a href="/memory" class="game-card bg-gray-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-green-500/20">
+            <img src="{{ url_for('static', filename='images/memory_card_games.png') }}" alt="Memory Flip Card" class="w-full h-40 object-cover">
+            <div class="p-4">
+                <h2 class="text-xl font-bold mb-2 text-green-400">Memory Flip</h2>
+                <p class="text-gray-300 text-sm">Match pairs of cards to sharpen your visual memory.</p>
+            </div>
+        </a>
+        <a href="/math_quiz" class="game-card bg-gray-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-green-500/20">
+            <img src="{{ url_for('static', filename='images/maths_quiz.webp') }}" alt="Math Quiz" class="w-full h-40 object-cover">
+            <div class="p-4">
+                <h2 class="text-xl font-bold mb-2 text-green-400">Math Quiz</h2>
+                <p class="text-gray-300 text-sm">Test your calculation speed against the clock.</p>
+            </div>
+        </a>
+        <a href="/hangman" class="game-card bg-gray-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-green-500/20">
+            <img src="{{ url_for('static', filename='images/hangman_solver.webp') }}" alt="Hangman" class="w-full h-40 object-cover">
+            <div class="p-4">
+                <h2 class="text-xl font-bold mb-2 text-green-400">Hangman</h2>
+                <p class="text-gray-300 text-sm">Guess letters to reveal the secret word before it’s too late.</p>
+            </div>
+        </a>
+         <a href="/pattern_lock" class="game-card bg-gray-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-green-500/20">
+            <img src="{{ url_for('static', filename='images/Pattern_Lock.png') }}" alt="Pattern Lock Puzzle" class="w-full h-40 object-cover">
+            <div class="p-4">
+                <h2 class="text-xl font-bold mb-2 text-green-400">Pattern Lock</h2>
+                <p class="text-gray-300 text-sm">Test your visual logic and memory by cracking patterns.</p>
+            </div>
+        </a> 
+    </div>
+</main>
+{% include 'profile_panel.html' %}
+<script>
+    if (!document.getElementById('star-field').hasChildNodes()) {
+        const starField = document.getElementById('star-field');
+        for (let i = 0; i < 200; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 3;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.animationDuration = `${2 + Math.random() * 3}s`;
+            star.style.animationDelay = `${Math.random() * 5}s`;
+            starField.appendChild(star); }}
+    function toggleProfilePanel() {
+        document.getElementById('profilePanel').classList.toggle('translate-x-full');}
+</script>
+</body>
+</html>

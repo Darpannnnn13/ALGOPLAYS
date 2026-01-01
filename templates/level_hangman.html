@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hangman Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        .letter-box {
+            width: 3rem; height: 3.5rem; line-height: 3.5rem;
+            border-bottom: 3px solid #4A5568;
+        }
+        .key {
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .key:disabled {
+            opacity: 0.4;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+        .hangman-part {
+            stroke: #CBD5E0; stroke-width: 4; fill: none;
+            stroke-linecap: round;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .hangman-part.visible { opacity: 1; }
+        .star-field {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0C0A1A;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { transform: scale(0.5); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-6 min-h-screen flex flex-col items-center">
+
+    <div id="star-field" class="star-field"></div>
+
+    <div class="text-center mb-4">
+        <h1 class="text-4xl font-bold text-green-400">Hangman</h1>
+        <h2 class="text-2xl text-gray-400">{{ difficulty.capitalize() }} Level {{ level }}</h2>
+    </div>
+
+    <div class="flex justify-center gap-4 mb-4">
+        <a href="/hangman/levels" class="px-4 py-2 bg-blue-500 text-black rounded font-bold hover:bg-blue-400">⬅️ Levels</a>
+        <button onclick="location.reload()" class="px-4 py-2 bg-yellow-500 text-black rounded font-bold hover:bg-yellow-400">🔁 New Game</button>
+        {% if level < 5 %}
+            <a href="/level/hangman/{{ difficulty }}/{{ level + 1 }}" class="px-4 py-2 bg-green-600 text-black rounded font-bold hover:bg-green-500">Next Level ➡️</a>
+        {% endif %}
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8 items-center w-full max-w-5xl">
+        <div class="flex-shrink-0">
+            <svg height="250" width="200" id="hangman-svg" class="stroke-current text-gray-400">
+                <line x1="10" y1="230" x2="130" y2="230" stroke-width="4" />
+                <line x1="70" y1="230" x2="70" y2="20" stroke-width="4" />
+                <line x1="70" y1="20" x2="150" y2="20" stroke-width="4" />
+                <line x1="150" y1="20" x2="150" y2="50" stroke-width="4" />
+                <circle cx="150" cy="70" r="20" class="hangman-part" id="part-head" />
+                <line x1="150" y1="90" x2="150" y2="150" class="hangman-part" id="part-body" />
+                <line x1="150" y1="110" x2="120" y2="130" class="hangman-part" id="part-left-arm" />
+                <line x1="150" y1="110" x2="180" y2="130" class="hangman-part" id="part-right-arm" />
+                <line x1="150" y1="150" x2="120" y2="180" class="hangman-part" id="part-left-leg" />
+                <line x1="150" y1="150" x2="180" y2="180" class="hangman-part" id="part-right-leg" />
+            </svg>
+        </div>
+
+        <div class="flex flex-col items-center justify-between h-full w-full">
+            <div id="word-display" class="flex justify-center gap-2 flex-wrap mb-4"></div>
+            <div class="text-lg text-yellow-400 mb-4">
+                <strong>Hint:</strong> <span id="hint-display"></span>
+            </div>
+            <div class="flex gap-8">
+                <div class="text-md text-red-400">
+                    <strong>Incorrect Guesses:</strong> <span id="incorrect-guesses">0</span> / 6
+                </div>
+                <div class="text-md text-cyan-400">
+                    <strong>Time:</strong> <span id="timer">0.00</span>s
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="keyboard" class="mt-6 grid grid-cols-9 gap-2 max-w-2xl"></div>
+    
+    <script>
+        const levelData = {{ level_data | tojson | safe }};
+        const levelKey = `hangman_{{ difficulty }}-{{ level }}`;
+        const secretWord = levelData.word.toUpperCase();
+        const wordDisplay = document.getElementById('word-display');
+        const hintDisplay = document.getElementById('hint-display');
+        const keyboard = document.getElementById('keyboard');
+        const incorrectGuessesEl = document.getElementById('incorrect-guesses');
+        const timerEl = document.getElementById('timer');
+
+        let guessedLetters = new Set();
+        let incorrectGuesses = 0;
+        const maxIncorrectGuesses = 6;
+        const hangmanParts = ['part-head', 'part-body', 'part-left-arm', 'part-right-arm', 'part-left-leg', 'part-right-leg'];
+        let timerInterval = null;
+        let startTime = null;
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2);
+                timerEl.textContent = elapsedTime;
+            }, 100);
+        }
+
+        function setupGame() {
+            hintDisplay.textContent = levelData.hint;
+            wordDisplay.innerHTML = secretWord.split('').map(() => 
+                `<div class="letter-box text-2xl font-bold text-center"></div>`
+            ).join('');
+
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i);
+                const button = document.createElement('button');
+                button.textContent = letter;
+                button.className = 'key bg-gray-700 p-2 rounded text-lg font-semibold hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-green-400';
+                button.addEventListener('click', () => handleGuess(letter, button));
+                keyboard.appendChild(button);
+            }
+            startTimer();
+        }
+
+        function handleGuess(letter, button) {
+            if (guessedLetters.has(letter)) return;
+            guessedLetters.add(letter);
+            button.disabled = true;
+
+            if (secretWord.includes(letter)) {
+                updateWordDisplay();
+                checkWinCondition();
+            } else {
+                incorrectGuesses++;
+                updateHangmanDrawing();
+                incorrectGuessesEl.textContent = incorrectGuesses;
+                checkLossCondition();
+            }
+        }
+
+        function updateWordDisplay() {
+            const letters = wordDisplay.children;
+            secretWord.split('').forEach((char, index) => {
+                if (guessedLetters.has(char)) {
+                    letters[index].textContent = char;
+                }
+            });
+        }
+        
+        function updateHangmanDrawing() {
+            if (incorrectGuesses > 0 && incorrectGuesses <= hangmanParts.length) {
+                document.getElementById(hangmanParts[incorrectGuesses - 1]).classList.add('visible');
+            }
+        }
+
+        function checkWinCondition() {
+            const isWon = secretWord.split('').every(char => guessedLetters.has(char));
+            if (isWon) {
+                endGame(true);
+            }
+        }
+
+        function checkLossCondition() {
+            if (incorrectGuesses >= maxIncorrectGuesses) {
+                endGame(false);
+            }
+        }
+
+        function endGame(isWon) {
+            clearInterval(timerInterval); // Stop the timer
+            keyboard.querySelectorAll('.key').forEach(btn => btn.disabled = true);
+            
+            const finalTime = timerEl.textContent;
+            const status = isWon ? 'won' : 'lost';
+            let message = '';
+
+            if (isWon) {
+                // Reveal full word on win
+                secretWord.split('').forEach((char, index) => {
+                    wordDisplay.children[index].textContent = char;
+                });
+                message = `🎉 You won in ${finalTime}s! The word was "${secretWord}".`;
+            } else {
+                // On loss, do NOT reveal the word and give a "try again" message.
+                message = `💀 You lost! Use the "New Game" button to try again.`;
+            }
+            
+            // Save progress
+            fetch(`/mark_game_played/${levelKey}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    status: status, 
+                    time_taken: parseFloat(finalTime),
+                    incorrect_guesses: incorrectGuesses 
+                })
+            });
+
+            setTimeout(() => alert(message), 500);
+        }
+
+        setupGame();
+
+        // Starfield animation
+        const starField = document.getElementById('star-field');
+        if (starField && !starField.hasChildNodes()) {
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 3;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.animationDuration = `${2 + Math.random() * 3}s`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                starField.appendChild(star);
+            }
+        }
+    </script>
+</body>
+</html>

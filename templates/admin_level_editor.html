@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Edit {{ game_name.replace('_', ' ').title() }} Levels</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .maze-editor-cell {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #4A5568;
+            cursor: pointer;
+        }
+        .maze-editor-cell.wall { background-color: #2D3748; }
+        .maze-editor-cell.path { background-color: #F7FAFC; }
+        .maze-editor-cell.start { background-color: #48BB78; }
+        .maze-editor-cell.end { background-color: #F56565; }
+        textarea {
+            font-family: monospace;
+            background-color: #1A202C;
+            color: #E2E8F0;
+            border: 1px solid #4A5568;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-6">
+    <h1 class="text-3xl font-bold text-green-400 mb-2">Edit {{ game_name.replace('_', ' ').title() }}</h1>
+    <h2 class="text-xl text-gray-400 mb-6">Difficulty: {{ difficulty.capitalize() }} | Level: {{ level }}</h2>
+
+    <div class="mb-4">
+        <a href="{{ url_for('admin_edit_level_list', game_name=game_name) }}" class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-500">&larr; Back to Level List</a>
+    </div>
+
+    <div id="editor-container" class="bg-gray-800 p-6 rounded-lg">
+        <!-- Maze Editor -->
+        {% if game_name == 'maze' %}
+        <div id="maze-editor" class="grid" style="grid-template-columns: repeat({{ level_data[0]|length }}, 30px); gap: 1px;"></div>
+        <div class="mt-4">
+            <label class="mr-4"><input type="radio" name="paintMode" value="path" checked> Path (0)</label>
+            <label><input type="radio" name="paintMode" value="wall"> Wall (1)</label>
+        </div>
+
+        <!-- Generic JSON Editor for other games -->
+        {% else %}
+        <h3 class="text-lg font-bold mb-2">JSON Data</h3>
+        <p class="text-sm text-gray-500 mb-2">Edit the JSON below. Ensure the format is correct before saving.</p>
+        <textarea id="json-editor" rows="20" class="w-full"></textarea>
+        {% endif %}
+
+        <button id="save-btn" class="mt-6 px-6 py-2 bg-green-500 text-black rounded font-bold hover:bg-green-400">Save Changes</button>
+        <div id="save-status" class="mt-2 text-sm"></div>
+    </div>
+
+    <script>
+        const gameName = "{{ game_name }}";
+        const difficulty = "{{ difficulty }}";
+        const level = "{{ level }}";
+        const levelData = {{ level_data | tojson | safe }};
+
+        const saveBtn = document.getElementById('save-btn');
+        const saveStatus = document.getElementById('save-status');
+        
+        let currentLevelData = levelData;
+
+        // Maze-specific editor logic
+        if (gameName === 'maze') {
+            const editor = document.getElementById('maze-editor');
+            
+            function renderMaze() {
+                editor.innerHTML = '';
+                currentLevelData.forEach((row, r) => {
+                    row.forEach((cell, c) => {
+                        const div = document.createElement('div');
+                        div.className = 'maze-editor-cell';
+                        div.dataset.r = r;
+                        div.dataset.c = c;
+                        if (r === 0 && c === 0) div.classList.add('start');
+                        else if (r === currentLevelData.length - 1 && c === row.length - 1) div.classList.add('end');
+                        else div.classList.add(cell === 1 ? 'wall' : 'path');
+                        editor.appendChild(div);
+                    });
+                });
+            }
+
+            editor.addEventListener('click', e => {
+                const cell = e.target;
+                if (!cell.classList.contains('maze-editor-cell') || (cell.dataset.r == 0 && cell.dataset.c == 0) || (cell.dataset.r == currentLevelData.length - 1 && cell.dataset.c == currentLevelData[0].length - 1)) return;
+                
+                const r = parseInt(cell.dataset.r);
+                const c = parseInt(cell.dataset.c);
+                const mode = document.querySelector('input[name="paintMode"]:checked').value;
+                const newValue = (mode === 'wall') ? 1 : 0;
+                
+                currentLevelData[r][c] = newValue;
+                cell.className = 'maze-editor-cell'; // Reset classes
+                cell.classList.add(newValue === 1 ? 'wall' : 'path');
+            });
+            
+            renderMaze();
+        
+        // Logic for all other games using the JSON textarea
+        } else {
+            const editor = document.getElementById('json-editor');
+            editor.value = JSON.stringify(currentLevelData, null, 2);
+            
+            // Listen for changes to update the currentLevelData
+            editor.addEventListener('input', () => {
+                try {
+                    currentLevelData = JSON.parse(editor.value);
+                    saveStatus.textContent = 'JSON is valid.';
+                    saveStatus.style.color = 'lightgreen';
+                } catch (err) {
+                    saveStatus.textContent = 'Invalid JSON format!';
+                    saveStatus.style.color = 'salmon';
+                }
+            });
+        }
+
+        // Generic save button logic
+        saveBtn.addEventListener('click', () => {
+            saveStatus.textContent = 'Saving...';
+            saveStatus.style.color = 'white';
+
+            fetch('/admin/save_level', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    game_name: gameName,
+                    difficulty: difficulty,
+                    level: level,
+                    data: currentLevelData
+                })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'success') {
+                    saveStatus.textContent = 'Saved successfully!';
+                    saveStatus.style.color = 'lightgreen';
+                } else {
+                    saveStatus.textContent = `Error: ${response.message}`;
+                    saveStatus.style.color = 'salmon';
+                }
+            })
+            .catch(err => {
+                saveStatus.textContent = 'An error occurred while saving.';
+                saveStatus.style.color = 'salmon';
+            });
+        });
+    </script>
+
+</body>
+</html>

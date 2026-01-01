@@ -1,0 +1,60 @@
+{% if user %}
+<aside id="profilePanel" class="fixed top-0 right-0 w-80 h-full bg-gray-800 shadow-lg transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col">
+  <div class="flex justify-between items-center p-4 border-b border-gray-700 flex-shrink-0">
+    <h3 class="text-lg font-bold text-green-400">Your Profile</h3>
+    <button onclick="toggleProfilePanel()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+  </div>
+  <div class="p-4 space-y-4 overflow-y-auto">
+    <p><span class="font-bold">Full Name:</span> {{ user.name }}</p>
+    <p><span class="font-bold">Username:</span> {{ user.username }}</p>
+    <p><span class="font-bold">Email:</span> {{ user.email }}</p>
+    <p><span class="font-bold">Gender:</span> {{ user.gender }}</p>
+    <a href="{{ url_for('edit_profile') }}" class="block w-full text-center px-4 py-2 mt-4 bg-blue-500 text-black rounded hover:bg-blue-400 transition">Edit Profile</a>
+    <div>
+      <h4 class="font-bold mt-6 mb-2">History</h4>
+      <div class="max-h-64 overflow-y-auto pr-2">
+        <ul class="text-gray-400 text-sm list-disc list-inside space-y-1">
+          {% if history %}
+            {% for item in history %}
+              <li class="flex items-center">
+                {% if item.is_won %}
+                  <i class="fas fa-star text-yellow-400 mr-2"></i>
+                {% else %}
+                  <i class="fas fa-times-circle text-red-400 mr-2"></i>
+                {% endif %}
+                <div>
+                  <span class="font-bold
+                    {% if item.game == 'Maze Solver' %}text-indigo-500
+                    {% elif item.game == 'Puzzle Solver' %}text-violet-400
+                    {% elif item.game == 'Sudoku' %}text-fuchsia-400
+                    {% elif item.game == 'Word Search' %}text-rose-400
+                    {% elif item.game == 'Memory' %}text-teal-400
+                    {% elif item.game == 'Hangman' %}text-amber-400
+                    {% elif item.game == 'Pattern Lock' %}text-cyan-400
+                    {% elif item.game == 'Number Guessing' %}text-orange-400
+                    {% elif item.game == 'Math Quiz' %}text-emerald-400
+                    {% else %}text-gray-300
+                    {% endif %}">{{ item.game }}</span> -
+                  <span class="{% if item.difficulty == 'easy' %}text-green-400{% elif item.difficulty == 'medium' %}text-yellow-400{% else %}text-red-400{% endif %}">{{ item.level }}</span>
+                </div>
+              </li>
+            {% endfor %}
+          {% else %}
+            <li>No history yet.</li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="p-4 border-t border-gray-700 mt-auto flex-shrink-0">
+    <a href="{{ url_for('logout') }}"
+       class="block w-full text-center px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition">Logout</a>
+    <div class="flex gap-4 justify-center mt-6">
+      <a href="#" class="text-red-600 text-3xl hover:scale-110 transition"><i class="fab fa-youtube"></i></a>
+      <a href="#" class="text-pink-500 text-3xl hover:scale-110 transition"><i class="fab fa-instagram"></i></a>
+      <a href="#" class="text-blue-600 text-3xl hover:scale-110 transition"><i class="fab fa-linkedin"></i></a>
+      <a href="#" class="text-indigo-500 text-3xl hover:scale-110 transition"><i class="fab fa-discord"></i></a>
+    </div>
+  </div>
+</aside>
+{% endif %}

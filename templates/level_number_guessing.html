@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Guess the Number | {{ difficulty.upper() }} Level {{ level }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .game-area.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .ai-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .star-field {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0C0A1A;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { transform: scale(0.5); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-10 min-h-screen flex flex-col items-center">
+
+    <div id="star-field" class="star-field"></div>
+
+    <div class="text-center mb-6">
+        <h1 class="text-4xl font-bold text-green-400">Guess the Number</h1>
+        <h2 class="text-2xl text-gray-400">{{ difficulty.capitalize() }} Level {{ level }}</h2>
+        <h2 class="text-2xl text-gray-400">Guess a number between {{ level_data.range[0] }} and {{ level_data.range[1] }}</h2>
+    </div>
+
+    <div class="w-full max-w-5xl flex justify-center">
+        <div class="flex justify-center gap-4 mb-6">
+            <a href="/number_guessing/levels" class="px-4 py-2 bg-blue-500 text-black rounded font-bold hover:bg-blue-400">⬅️ Levels</a>
+            <button id="start-play-btn" class="px-4 py-2 bg-green-500 text-black rounded font-bold hover:bg-green-400">▶️ Start Play</button>
+            <button onclick="location.reload()" class="px-4 py-2 bg-yellow-500 text-black rounded font-bold hover:bg-yellow-400">🔁 Restart</button>
+        </div>
+    </div>
+
+    <div class="flex flex-row gap-8 items-start w-full max-w-5xl">
+        <div class="flex flex-col gap-3 w-48">
+            <h3 class="text-2xl font-bold text-green-400">AI Solvers:</h3>
+            <button onclick="runAI('Greedy')" class="ai-button px-4 py-2 bg-purple-600 text-black rounded font-bold hover:bg-purple-500 w-full mt-2" disabled>Run Greedy AI</button>
+            <button onclick="runAI('DFS')" class="ai-button px-4 py-2 bg-red-600 text-black rounded font-bold hover:bg-red-500 w-full mt-2" disabled>Run DFS AI</button>
+        </div>
+
+        <div id="game-area" class="game-area disabled flex-grow w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-bold text-yellow-400 mb-2">Your Turn</h3>
+            <div class="flex gap-2">
+                <input type="number" id="guessInput" class="flex-grow bg-gray-700 text-white p-2 rounded" placeholder="Enter your guess...">
+                <button id="submitGuess" class="px-4 py-2 bg-blue-600 rounded font-bold hover:bg-blue-500">Guess</button>
+            </div>
+            <p class="mt-2 text-lg">Guesses left: <span id="guessesLeft">{{ level_data.max_guesses }}</span></p>
+            <div id="hint" class="mt-2 text-xl font-bold h-8"></div>
+            <div id="ai-path" class="bg-gray-900 p-4 rounded h-48 overflow-y-auto mt-4">
+                <h4 class="font-bold text-lg text-teal-400 mb-2">AI Guessing Path:</h4>
+                <p>Run an AI to see its path here.</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-4 text-sm w-80">
+            <div class="p-3 rounded bg-yellow-800/20 border border-yellow-400">
+                <div class="font-bold text-yellow-400">Your Stats</div>
+                <div>Guesses: <span id="userGuesses">0</span></div>
+                <div>Time: <span id="userTime">0.00s</span></div>
+            </div>
+            <div class="p-3 rounded bg-purple-800/20 border border-purple-400">
+                <div class="font-bold text-purple-400">Greedy AI Stats</div>
+                <div>Guesses: <span id="greedy-guesses">N/A</span></div>
+                <div>Time: <span id="greedy-time">N/A</span></div>
+            </div>
+            <div class="p-3 rounded bg-red-800/20 border border-red-400">
+                <div class="font-bold text-red-400">DFS AI Stats</div>
+                <div>Guesses: <span id="dfs-guesses">N/A</span></div>
+                <div>Time: <span id="dfs-time">N/A</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const levelData = {{ level_data | tojson }};
+        const levelKey = `number_guessing_{{ difficulty }}-{{ level }}`;
+        
+        // UI Elements
+        const startPlayBtn = document.getElementById('start-play-btn');
+        const gameArea = document.getElementById('game-area');
+        const guessInput = document.getElementById('guessInput');
+        const submitGuessBtn = document.getElementById('submitGuess');
+        const guessesLeftEl = document.getElementById('guessesLeft');
+        const hintEl = document.getElementById('hint');
+        const aiPathEl = document.getElementById('ai-path');
+        const aiButtons = document.querySelectorAll('.ai-button');
+
+        // Result spans
+        const userGuessesEl = document.getElementById('userGuesses');
+        const userTimeEl = document.getElementById('userTime');
+        const greedyGuessesEl = document.getElementById('greedy-guesses');
+        const greedyTimeEl = document.getElementById('greedy-time');
+        const dfsGuessesEl = document.getElementById('dfs-guesses');
+        const dfsTimeEl = document.getElementById('dfs-time');
+
+        // Game state
+        let remainingGuesses = levelData.max_guesses;
+        let guessesTaken = 0;
+        let userTimer, userStartTime;
+        
+        function startUserTimer() {
+            if (userTimer) clearInterval(userTimer);
+            userStartTime = Date.now();
+            userTimer = setInterval(() => {
+                userTimeEl.textContent = ((Date.now() - userStartTime) / 1000).toFixed(2) + 's';
+            }, 100);
+        }
+
+        startPlayBtn.addEventListener('click', () => {
+            gameArea.classList.remove('disabled');
+            startPlayBtn.disabled = true;
+            startPlayBtn.style.opacity = 0.5;
+            startUserTimer();
+        });
+
+        function handleGuess() {
+            const guess = parseInt(guessInput.value);
+            if (isNaN(guess)) return;
+
+            remainingGuesses--;
+            guessesTaken++;
+            guessesLeftEl.textContent = remainingGuesses;
+            userGuessesEl.textContent = guessesTaken;
+            guessInput.value = '';
+
+            if (guess === levelData.number) {
+                hintEl.textContent = `🎉 Correct! You guessed it in ${guessesTaken} tries!`;
+                hintEl.style.color = '#48BB78';
+                endGame(true);
+            } else if (remainingGuesses <= 0) {
+                hintEl.textContent = `😢 Out of guesses! The number was ${levelData.number}.`;
+                hintEl.style.color = '#F56565';
+                endGame(false);
+            } else if (guess < levelData.number) {
+                hintEl.textContent = 'Higher!';
+                hintEl.style.color = '#63B3ED';
+            } else {
+                hintEl.textContent = 'Lower!';
+                hintEl.style.color = '#F6E05E';
+            }
+        }
+
+        function endGame(won) {
+            clearInterval(userTimer); // Stop the timer
+            submitGuessBtn.disabled = true;
+            guessInput.disabled = true;
+            aiButtons.forEach(btn => btn.disabled = false); // Enable AI buttons
+
+            if (won) {
+                const finalTime = userTimeEl.textContent;
+                fetch(`/mark_game_played/${levelKey}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        human_guesses: guessesTaken,
+                        human_time: finalTime
+                    })
+                });
+            }
+        }
+
+        submitGuessBtn.addEventListener('click', handleGuess);
+        guessInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') handleGuess();
+        });
+
+        function runAI(algo) {
+            fetch('/solve_number_guessing', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ level_data: levelData, level_key: levelKey, algorithm: algo })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const guessesEl = (algo === 'Greedy') ? greedyGuessesEl : dfsGuessesEl;
+                const timeEl = (algo === 'Greedy') ? greedyTimeEl : dfsTimeEl;
+
+                guessesEl.textContent = data.path.length;
+                timeEl.textContent = `${parseFloat(data.ai_time).toFixed(9)}s`;
+
+                aiPathEl.innerHTML = `
+                    <h4 class="font-bold text-lg text-teal-400 mb-2">${algo} AI Guessing Path:</h4>
+                    <p class="text-gray-400 break-words">${data.path.join(' → ')}</span></p>
+                `;
+            });
+        }
+
+        // Starfield animation
+        const starField = document.getElementById('star-field');
+        if (starField && !starField.hasChildNodes()) {
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 3;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.animationDuration = `${2 + Math.random() * 3}s`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                starField.appendChild(star);
+            }
+        }
+
+        // Function to fetch and display existing records on page load
+        async function displayRecords() {
+            try {
+                const response = await fetch('/get_user_progress'); // Assumes you have this endpoint
+                if (!response.ok) return;
+
+                const allProgress = await response.json();
+                const levelProgress = allProgress[levelKey];
+
+                if (levelProgress) {
+                    // Update Human stats if they exist
+                    if (levelProgress.human_guesses) {
+                        userGuessesEl.textContent = levelProgress.human_guesses;
+                    }
+                    if (levelProgress.human_time) {
+                        userTimeEl.textContent = levelProgress.human_time;
+                    }
+
+                    // Update Greedy AI stats
+                    if (levelProgress.greedy_guesses) {
+                        greedyGuessesEl.textContent = levelProgress.greedy_guesses;
+                        const timeInSec = parseFloat(levelProgress.greedy_time).toFixed(9) + 's';
+                        greedyTimeEl.textContent = timeInSec;
+                    }
+
+                    // Update DFS AI stats
+                    if (levelProgress.dfs_guesses) {
+                        dfsGuessesEl.textContent = levelProgress.dfs_guesses;
+                        const timeInSec = parseFloat(levelProgress.dfs_time).toFixed(9) + 's';
+                        dfsTimeEl.textContent = timeInSec;
+                    }
+                }
+            } catch (error) {
+                console.error("Could not fetch user progress:", error);
+            }
+        }
+
+        // Run the display function when the page content is loaded
+        document.addEventListener('DOMContentLoaded', displayRecords);
+    </script>
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Leaderboard - AlgoPlay</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        body { background-color: transparent; }
+        .star-field {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0C0A1A;
+            overflow: hidden;
+            z-index: -1;}
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle linear infinite;}
+        @keyframes twinkle {
+            0%, 100% { transform: scale(0.5); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 1; }}
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+<div id="star-field" class="star-field"></div>
+<header class="fixed top-0 left-0 w-full backdrop-blur-md bg-gray-900/50 border-b border-green-500/20 z-50">
+  <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center px-4 py-4">
+    <a href="{{ url_for('home') }}" class="text-2xl font-bold text-green-400">AlgoPlay</a>
+    <nav class="flex flex-wrap items-center gap-6">
+      <a href="{{ url_for('home') }}" class="hover:text-green-400">Home</a>
+      <a href="{{ url_for('games') }}" class="hover:text-green-400">Games</a>
+      <a href="{{ url_for('leaderboard') }}" class="hover:text-green-400 text-green-400 font-bold">Leaderboard</a>
+      <a href="{{ url_for('about') }}" class="hover:text-green-400">About</a>
+      {% if user %}
+        <div onclick="toggleProfilePanel()" class="w-10 h-10 flex items-center justify-center rounded-full bg-green-400 text-black font-bold cursor-pointer">
+          {{ user.name[0]|upper }}
+        </div>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="px-4 py-2 rounded bg-green-400 text-black font-bold hover:bg-green-300 transition">
+          Login/Register
+        </a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+<main class="relative z-10 pt-28 max-w-5xl mx-auto px-4 pb-16">
+    <h2 class="text-4xl font-bold mb-6 text-center text-green-400">🏆 Leaderboard</h2>
+    <div class="p-4 bg-gray-800/50 backdrop-blur-sm rounded-lg mb-4 border border-green-500/20">
+        <h3 class="text-sm font-bold text-gray-400 mb-2">Filter by Game</h3>
+        <div id="game-filters" class="flex flex-wrap gap-2">
+            <button data-filter="all" class="filter-btn game-btn px-4 py-2 rounded-full text-sm font-semibold bg-green-500 text-black">Overall Ranking</button>
+            <button data-filter="maze" class="filter-btn game-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600">Maze</button>
+            <button data-filter="puzzle" class="filter-btn game-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600">Puzzle</button>
+            <button data-filter="sudoku" class="filter-btn game-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600">Sudoku</button>
+            <button data-filter="word_search" class="filter-btn game-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600">Word Search</button>
+            <button data-filter="memory" class="filter-btn game-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600">Memory</button>
+            <button data-filter="hangman" class="filter-btn game-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600">Hangman</button>
+            <button data-filter="pattern_lock" class="filter-btn game-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600">Pattern Lock</button>
+            <button data-filter="number_guessing" class="filter-btn game-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600">Number Guessing</button>
+            <button data-filter="math_quiz" class="filter-btn game-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600">Math Quiz</button>
+        </div>
+    </div>
+    <div id="sub-filters-container" class="flex flex-col md:flex-row gap-4 mb-8 p-4 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-green-500/20" style="display: none;">
+        <div id="difficulty-filters-container" class="flex-1">
+            <h3 class="text-sm font-bold text-gray-400 mb-2">Select Difficulty</h3>
+            <div id="difficulty-filters" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div id="level-filters-container" class="flex-1" style="display: none;">
+            <h3 class="text-sm font-bold text-gray-400 mb-2">Select Level</h3>
+            <div id="level-filters" class="flex flex-wrap gap-2"></div>
+        </div>
+    </div>
+    <div id="leaderboard-display">
+        <div class="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden border border-green-500/20">
+            <table class="w-full text-left">
+                <thead class="bg-gray-700/50">
+                    <tr>
+                        <th class="p-4 w-16 text-center">Rank</th>
+                        <th class="p-4">Player</th>
+                        <th id="score-header" class="p-4 text-right">Performance</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body"></tbody>
+            </table>
+        </div>
+        <div id="ai-leaderboard-container" class="mt-12" style="display: none;">
+            <h3 class="text-3xl font-bold mb-6 text-center text-blue-400">🤖 AI Performance (for this level)</h3>
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden border border-green-500/20">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-700/50">
+                        <tr>
+                            <th class="p-4 w-16 text-center">Rank</th>
+                            <th class="p-4">AI Algorithm</th>
+                            <th class="p-4 text-right">Time (s)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ai-leaderboard-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="selection-prompt" class="text-center py-16 text-gray-500" style="display: none;">
+        <p>Select a difficulty and level to view rankings.</p>
+    </div>
+</main>
+{% include 'profile_panel.html' %}
+<script>
+    if (!document.getElementById('star-field').hasChildNodes()) {
+        const starField = document.getElementById('star-field');
+        for (let i = 0; i < 200; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 3;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.animationDuration = `${2 + Math.random() * 3}s`;
+            star.style.animationDelay = `${Math.random() * 5}s`;
+            starField.appendChild(star);} }
+    const allPlayerData = {{ data | tojson }};
+    const gameButtons = document.querySelectorAll('.game-btn');
+    const subFiltersContainer = document.getElementById('sub-filters-container');
+    const difficultyFilters = document.getElementById('difficulty-filters');
+    const levelContainer = document.getElementById('level-filters-container');
+    const levelFilters = document.getElementById('level-filters');
+    const leaderboardDisplay = document.getElementById('leaderboard-display');
+    const selectionPrompt = document.getElementById('selection-prompt');
+    const playerTableBody = document.getElementById('leaderboard-body');
+    const aiTableBody = document.getElementById('ai-leaderboard-body');
+    const scoreHeader = document.getElementById('score-header');
+    const aiLeaderboardContainer = document.getElementById('ai-leaderboard-container');
+    let selectedGame = 'all';
+    let selectedDifficulty = null;
+    let selectedLevel = null;
+    function toggleProfilePanel() {
+        document.getElementById('profilePanel').classList.toggle('translate-x-full');
+    }
+    function setActiveButton(group, activeBtn) {
+        group.forEach(btn => btn.classList.replace('bg-green-500', 'bg-gray-700'));
+        activeBtn.classList.replace('bg-gray-700', 'bg-green-500');
+    }
+    gameButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            selectedGame = button.dataset.filter;
+            setActiveButton(gameButtons, button);
+            selectedDifficulty = null;
+            selectedLevel = null;
+            levelContainer.style.display = 'none';
+            if (selectedGame === 'all') {
+                subFiltersContainer.style.display = 'none';
+                selectionPrompt.style.display = 'none';
+                leaderboardDisplay.style.display = 'block';
+                renderOverallLeaderboard();
+            } else {
+                leaderboardDisplay.style.display = 'none';
+                selectionPrompt.style.display = 'block';
+                selectionPrompt.innerHTML = '<p>Now, select a difficulty.</p>';
+                updateDifficultyFilters();}});});
+    function updateDifficultyFilters() {
+        difficultyFilters.innerHTML = '';
+        ['easy', 'medium', 'hard'].forEach(diff => {
+            const button = document.createElement('button');
+            button.dataset.filter = diff;
+            button.className = 'filter-btn diff-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600';
+            button.textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
+            button.addEventListener('click', () => {
+                selectedDifficulty = diff;
+                setActiveButton(document.querySelectorAll('.diff-btn'), button);
+                selectionPrompt.innerHTML = '<p>Finally, select a level.</p>';
+                selectedLevel = null;
+                updateLevelFilters();
+            });
+            difficultyFilters.appendChild(button);
+        });
+        subFiltersContainer.style.display = 'flex';}
+    function updateLevelFilters() {
+        levelFilters.innerHTML = '';
+        [1, 2, 3, 4, 5].forEach(level => {
+            const button = document.createElement('button');
+            button.dataset.filter = level;
+            button.className = 'filter-btn level-btn px-4 py-2 rounded-full text-sm font-semibold bg-gray-700 hover:bg-gray-600';
+            button.textContent = `Level ${level}`;
+            button.addEventListener('click', () => {
+                selectedLevel = level;
+                setActiveButton(document.querySelectorAll('.level-btn'), button);
+                renderLevelLeaderboard();
+            });
+            levelFilters.appendChild(button);
+        });
+        levelContainer.style.display = 'block';}
+    function renderOverallLeaderboard() {
+        scoreHeader.textContent = 'Total Games Played';
+        aiLeaderboardContainer.style.display = 'none';
+        const sortedData = allPlayerData.sort((a, b) => b.total_games_played - a.total_games_played);
+        playerTableBody.innerHTML = sortedData.map((player, index) => `
+            <tr class="border-b border-gray-700/50 last:border-b-0 hover:bg-gray-700/50">
+                <td class="p-4 w-16 text-center font-bold text-lg">${index + 1}</td>
+                <td class="p-4">
+                    <div class="font-semibold">${player.name}</div>
+                    <div class="text-sm text-gray-400">@${player.username}</div>
+                </td>
+                <td class="p-4 text-right font-mono text-lg">${player.total_games_played}</td>
+            </tr>`).join('');}
+    function renderLevelLeaderboard() {
+        if (!selectedGame || !selectedDifficulty || !selectedLevel) return;
+        aiLeaderboardContainer.style.display = (selectedGame === 'hangman' || selectedGame === 'crossword') ? 'none' : 'block';
+        const levelKey = `${selectedGame}_${selectedDifficulty}-${selectedLevel}`;
+        let levelPlayers = [];
+        allPlayerData.forEach(player => {
+            if (player.progress && player.progress[levelKey]) {
+                const data = player.progress[levelKey];
+                if (selectedGame === 'hangman' && data.status === 'won') {
+                    levelPlayers.push({ name: player.name, username: player.username, data: data });
+                } else if (selectedGame !== 'hangman' && (data.human_time || data.human_guesses || data.user_score || data.human_moves)) {
+                    levelPlayers.push({ name: player.name, username: player.username, data: data });}}
+        });
+        if (selectedGame === 'hangman') {
+            scoreHeader.textContent = 'Incorrect Guesses / Time';
+            levelPlayers.sort((a, b) => {
+                if (a.data.incorrect_guesses !== b.data.incorrect_guesses) return a.data.incorrect_guesses - b.data.incorrect_guesses;
+                return a.data.time_taken - b.data.time_taken;
+            });
+        } else if (selectedGame === 'memory') {
+            scoreHeader.textContent = 'Moves / Time';
+            levelPlayers.sort((a, b) => {
+                if (a.data.human_moves !== b.data.human_moves) return a.data.human_moves - b.data.human_moves;
+                return parseFloat(a.data.human_time) - parseFloat(b.data.human_time);
+            });
+        } else if (selectedGame === 'math_quiz') {
+            scoreHeader.textContent = 'Score / Time';
+            levelPlayers.sort((a, b) => {
+                if (b.data.user_score !== a.data.user_score) return b.data.user_score - a.data.user_score;
+                return a.data.time_taken - b.data.time_taken;
+            });
+        } else if (selectedGame === 'number_guessing') {
+            scoreHeader.textContent = 'Guesses';
+             levelPlayers.sort((a, b) => a.data.human_guesses - b.data.human_guesses);
+        } else {
+            scoreHeader.textContent = 'Time (s)';
+            levelPlayers.sort((a, b) => parseFloat(a.data.human_time) - parseFloat(b.data.human_time));}
+        if (levelPlayers.length === 0) {
+            playerTableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400">No players have completed this level yet.</td></tr>`;
+        } else {
+            playerTableBody.innerHTML = levelPlayers.map((player, index) => {
+                let performance = '';
+                if (selectedGame === 'hangman') {
+                    performance = `${player.data.incorrect_guesses} wrong / ${player.data.time_taken.toFixed(2)}s`;
+                } else if (selectedGame === 'memory') {
+                    performance = `${player.data.human_moves} moves / ${parseFloat(player.data.human_time).toFixed(2)}s`;
+                } else if (selectedGame === 'math_quiz') {
+                    performance = `${player.data.user_score} pts / ${player.data.time_taken}s`;
+                } else if (selectedGame === 'number_guessing') {
+                    performance = `${player.data.human_guesses} guesses`;
+                } else {
+                    performance = `${parseFloat(player.data.human_time).toFixed(2)}s`;}
+                return `
+                    <tr class="border-b border-gray-700/50 last:border-b-0 hover:bg-gray-700/50">
+                        <td class="p-4 w-16 text-center font-bold text-lg">${index + 1}</td>
+                        <td class="p-4">
+                            <div class="font-semibold">${player.name}</div>
+                            <div class="text-sm text-gray-400">@${player.username}</div>
+                        </td>
+                        <td class="p-4 text-right font-mono text-lg">${performance}</td>
+                    </tr>`;
+            }).join('');}
+        if (aiLeaderboardContainer.style.display !== 'none') {
+            let aiPerformances = [];
+            allPlayerData.forEach(player => {
+                if (player.progress[levelKey]) {
+                    Object.keys(player.progress[levelKey]).forEach(key => {
+                        if (key.endsWith('_time') && key !== 'human_time') {
+                            const aiName = key.replace('_time', '').replace('star', '*').toUpperCase();
+                            if (!aiPerformances.find(p => p.name === aiName)) {
+                                aiPerformances.push({ name: aiName, time: parseFloat(player.progress[levelKey][key]) });
+                            }
+                        }
+                    });
+                }
+            });
+            aiPerformances.sort((a, b) => a.time - b.time);
+            aiTableBody.innerHTML = aiPerformances.length === 0 
+                ? `<tr><td colspan="3" class="p-4 text-center text-gray-400">No AI data.</td></tr>`
+                : aiPerformances.map((ai, index) => `
+                    <tr class="border-b border-gray-700/50 last:border-b-0 hover:bg-gray-700/50">
+                        <td class="p-4 w-16 text-center font-bold text-lg">${index + 1}</td>
+                        <td class="p-4 font-semibold">${ai.name}</td>
+                        <td class="p-4 text-right font-mono text-lg">${ai.time.toFixed(6)}s</td>
+                    </tr>`).join('');}
+        leaderboardDisplay.style.display = 'block';
+        selectionPrompt.style.display = 'none';}
+    renderOverallLeaderboard();
+</script>
+</body>
+</html>

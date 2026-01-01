@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Pattern Lock Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            width: 300px;
+            height: 300px;
+            position: relative;
+        }
+        .dot {
+            width: 30px;
+            height: 30px;
+            background-color: #4A5568;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .dot.active { background-color: #48BB78; }
+        .line {
+            position: absolute;
+            background-color: #48BB78;
+            height: 4px;
+            transform-origin: left center;
+            z-index: 5;
+        }
+        .star-field {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0C0A1A;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { transform: scale(0.5); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-6 min-h-screen flex flex-col items-center">
+
+    <div id="star-field" class="star-field"></div>
+
+    <div class="text-center mb-4">
+        <h1 class="text-4xl font-bold text-green-400">Pattern Lock</h1>
+        <h2 class="text-2xl text-gray-400">{{ difficulty.capitalize() }} Level {{ level }}</h2>
+    </div>
+
+    <div class="flex justify-center gap-4 mb-6">
+        <a href="/pattern_lock/levels" class="px-4 py-2 bg-blue-500 text-black rounded font-bold hover:bg-blue-400">⬅️ Levels</a>
+        <button id="start-btn" class="px-4 py-2 bg-green-500 text-black rounded font-bold hover:bg-green-400">▶️ Start Challenge</button>
+        <button onclick="location.reload()" class="px-4 py-2 bg-yellow-500 text-black rounded font-bold hover:bg-yellow-400">🔁 Reset</button>
+    </div>
+
+    <div class="flex flex-row gap-8 items-center w-full max-w-7xl justify-center">
+        <!-- AI Solver Buttons -->
+        <div class="flex flex-col gap-3">
+            <button onclick="runAI('BFS')" class="px-4 py-2 bg-blue-500 text-black rounded w-32 font-bold">Run BFS</button>
+            <button onclick="runAI('DFS')" class="px-4 py-2 bg-purple-500 text-black rounded w-32 font-bold">Run DFS</button>
+            <button onclick="runAI('A*')" class="px-4 py-2 bg-pink-500 text-black rounded w-32 font-bold">Run A*</button>
+            <button onclick="runAI('Greedy')" class="px-4 py-2 bg-teal-500 text-black rounded w-32 font-bold">Run Greedy</button>
+        </div>
+
+        <!-- Game Grids (Now side-by-side) -->
+        <div class="flex flex-row items-start gap-8">
+            <!-- Target Pattern Display -->
+            <div class="flex flex-col items-center">
+                <h3 class="text-xl mb-2 font-bold">Target Pattern</h3>
+                <div id="target-grid" class="grid-container bg-gray-800 p-4 rounded-lg"></div>
+            </div>
+            
+            <!-- User Grid -->
+            <div class="flex flex-col items-center">
+                <h3 class="text-xl mb-2 font-bold">Your Attempt</h3>
+                <div id="user-grid" class="grid-container bg-gray-800 p-4 rounded-lg opacity-50 pointer-events-none"></div>
+            </div>
+        </div>
+
+        <!-- Stats Display -->
+        <div class="flex flex-col gap-4 text-sm w-80">
+            <div class="p-3 rounded bg-green-800/20 border border-green-400">
+                <div class="font-bold text-green-400">Your Time</div>
+                    <div><span id="user-time">0.0000000</span>s</div>
+            </div>
+            <div class="p-3 rounded bg-blue-800/20 border border-blue-400">
+                <div class="font-bold text-blue-400">BFS Time</div>
+                <div><span id="BFS-time">N/A</span></div>
+            </div>
+            <div class="p-3 rounded bg-purple-800/20 border border-purple-400">
+                <div class="font-bold text-purple-400">DFS Time</div>
+                <div><span id="DFS-time">N/A</span></div>
+            </div>
+            <div class="p-3 rounded bg-pink-800/20 border border-pink-400">
+                <div class="font-bold text-pink-400">A* Time</div>
+                <div><span id="A-star-time">N/A</span></div>
+            </div>
+            <div class="p-3 rounded bg-teal-800/20 border border-teal-400">
+                <div class="font-bold text-teal-400">Greedy Time</div>
+                <div><span id="Greedy-time">N/A</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const targetPattern = {{ pattern | tojson | safe }};
+        const levelKey = `pattern_lock_{{ difficulty }}-{{ level }}`;
+        const targetGrid = document.getElementById('target-grid');
+        const userGrid = document.getElementById('user-grid');
+        const startBtn = document.getElementById('start-btn');
+        const userTimeEl = document.getElementById('user-time');
+        
+        let userPattern = [];
+        let isDrawing = false;
+        let timerInterval = null;
+        let startTime = null;
+
+        function createGrid(container) {
+            container.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.dataset.id = i;
+                container.appendChild(dot);
+            }
+        }
+
+        function drawPattern(container, pattern, duration = 50) {
+            clearLines(container);
+            const dots = Array.from(container.children).filter(el => el.classList.contains('dot'));
+            dots.forEach(d => d.classList.remove('active'));
+
+            for (let i = 0; i < pattern.length; i++) {
+                setTimeout(() => {
+                    // Check if the dot exists before trying to access it
+                    if(dots[pattern[i]]) {
+                        dots[pattern[i]].classList.add('active');
+                        if (i > 0) {
+                            const prevDot = dots[pattern[i-1]];
+                            const currDot = dots[pattern[i]];
+                            const line = createLine(prevDot, currDot);
+                            container.appendChild(line);
+                        }
+                    }
+                }, i * duration);
+            }
+        }
+        
+        function createLine(dot1, dot2) {
+            const line = document.createElement('div');
+            line.className = 'line';
+            const rect1 = dot1.getBoundingClientRect();
+            const rect2 = dot2.getBoundingClientRect();
+            const containerRect = dot1.parentElement.getBoundingClientRect();
+
+            const x1 = rect1.left + rect1.width / 2 - containerRect.left;
+            const y1 = rect1.top + rect1.height / 2 - containerRect.top;
+            const x2 = rect2.left + rect2.width / 2 - containerRect.left;
+            const y2 = rect2.top + rect2.height / 2 - containerRect.top;
+
+            const length = Math.sqrt((x2 - x1)**2 + (y2 - y1)**2);
+            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+            line.style.width = `${length}px`;
+            line.style.left = `${x1}px`;
+            line.style.top = `${y1}px`;
+            line.style.transform = `rotate(${angle}deg)`;
+            return line;
+        }
+
+        function clearLines(container) {
+             container.querySelectorAll('.line').forEach(line => line.remove());
+        }
+
+        function startChallenge() {
+            startBtn.disabled = true;
+            startBtn.classList.add('opacity-50');
+            userGrid.classList.remove('opacity-50', 'pointer-events-none');
+            
+            drawPattern(targetGrid, targetPattern, 150); // Show pattern slowly
+            
+            setTimeout(() => {
+                clearLines(targetGrid);
+                targetGrid.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
+                startTime = Date.now();
+                timerInterval = setInterval(() => {
+                    // Show the elapsed time with 7 decimal places
+                    userTimeEl.textContent = ((Date.now() - startTime) / 1000).toFixed(7);
+                }, 100);
+            }, targetPattern.length * 150 + 1000);
+        }
+
+        function handleDrawing(e) {
+            if (!isDrawing) return;
+            const dot = e.target.closest('.dot');
+            if (dot) {
+                const dotId = parseInt(dot.dataset.id);
+                if (!userPattern.includes(dotId)) {
+                    userPattern.push(dotId);
+                    drawPattern(userGrid, userPattern, 0);
+                }
+            }
+        }
+        
+        function stopDrawing() {
+            if (!isDrawing) return;
+            isDrawing = false;
+            if(timerInterval) clearInterval(timerInterval);
+
+            const isMatch = JSON.stringify(userPattern) === JSON.stringify(targetPattern);
+            if (isMatch) {
+                const finalTime = userTimeEl.textContent;
+                alert(`✅ Correct! Your time: ${finalTime}s`);
+                fetch(`/mark_game_played/${levelKey}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ human_time: finalTime })
+                });
+            } else {
+                alert('❌ Incorrect pattern. Try again by clicking "Reset".');
+            }
+        }
+
+        function runAI(algo) {
+            const timeEl = document.getElementById(`${algo.replace('*','-star')}-time`);
+            timeEl.textContent = 'Solving...';
+
+            fetch('/solve_pattern_lock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pattern: targetPattern, algorithm: algo, level_key: levelKey })
+            })
+            .then(res => res.json())
+            .then(data => {
+                timeEl.textContent = `${parseFloat(data.ai_time).toFixed(7)}s`;
+                drawPattern(targetGrid, data.solution, 100);
+            });
+        }
+        
+        // Initial setup
+        createGrid(targetGrid);
+        createGrid(userGrid);
+        
+        startBtn.addEventListener('click', startChallenge);
+        
+        userGrid.addEventListener('mousedown', (e) => {
+            if (!startTime) return;
+            isDrawing = true;
+            userPattern = [];
+            drawPattern(userGrid, []);
+            handleDrawing(e);
+        });
+        userGrid.addEventListener('mouseover', handleDrawing);
+        document.addEventListener('mouseup', stopDrawing);
+        
+        // Starfield animation
+        const starField = document.getElementById('star-field');
+        if (starField && !starField.hasChildNodes()) {
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 3;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.animationDuration = `${2 + Math.random() * 3}s`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                starField.appendChild(star);
+            }
+        }
+    </script>
+</body>
+</html>

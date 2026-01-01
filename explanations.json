@@ -1,0 +1,470 @@
+{
+  "maze": {
+    "bfs": {
+      "name": "Breadth-First Search (BFS)",
+      "description": "A cautious and exhaustive search algorithm that explores all neighboring nodes at the present depth before moving on to nodes at the next depth level. It's guaranteed to find the absolute shortest path in terms of steps.",
+      "analogy": "Imagine dropping a stone in a pond. BFS is like the ripples expanding evenly outwards from the center. It explores everything 1 foot away, then everything 2 feet away, ensuring it finds the closest shore in the shortest distance.",
+      "core_mechanism": "Uses a Queue data structure (First-In, First-Out).",
+      "time_complexity": "O(V + E) where V is vertices (cells) and E is edges (paths).",
+      "space_complexity": "O(V)",
+      "how_it_works": [
+        "It begins at the start node 'S' and adds all of its immediate, unvisited neighbors to a queue.",
+        "It then takes the first node from the front of the queue and repeats the process, adding that node's neighbors to the back of the queue.",
+        "Because it always processes nodes in the order they were discovered, it explores the maze layer by layer, guaranteeing the first path found to the exit 'E' is the shortest."
+      ],
+      "advantages": [
+        "Guaranteed to find the shortest path in terms of steps.",
+        "It is guaranteed to find a solution if one exists, making it a 'complete' algorithm."
+      ],
+      "disadvantages": [
+        "Requires a lot of memory for large mazes as the queue can grow very large.",
+        "Can be slow if the solution is very far from the start, as it must explore every other closer path first."
+      ]
+    },
+    "dfs": {
+      "name": "Depth-First Search (DFS)",
+      "description": "An aggressive and single-minded search algorithm that explores as far as possible down one branch before being forced to backtrack when it hits a dead end.",
+      "analogy": "Imagine you're in a corn maze and you decide to always take the first right turn you see. You follow that path as deep as you can. Only when you hit a dead end do you go back to your last turn and try the next option.",
+      "core_mechanism": "Uses a Stack data structure (Last-In, First-Out), often implemented via recursion.",
+      "time_complexity": "O(V + E)",
+      "space_complexity": "O(H), where H is the maximum height/depth of the maze.",
+      "how_it_works": [
+        "It starts at 'S' and immediately picks one neighbor to move to, pushing its previous location onto a stack.",
+        "From the new cell, it immediately picks another neighbor, diving deeper and deeper down one path.",
+        "When it hits a dead end, it 'backtracks' by popping a location from the stack and exploring a different branch from there."
+      ],
+      "advantages": [
+        "Very memory-efficient compared to BFS, as it only needs to store the current path.",
+        "Can be very fast at finding *some* solution if it gets lucky and picks the correct path early."
+      ],
+      "disadvantages": [
+        "Not guaranteed to find the shortest path; the solution found can be very long and inefficient.",
+        "Can get stuck exploring a very long, fruitless path before trying other, shorter options."
+      ]
+    },
+    "astar": {
+      "name": "A* Search",
+      "description": "An intelligent or 'informed' search algorithm that uses a heuristic to guide its pathfinding, balancing the path already traveled with an estimate of the path remaining to the exit.",
+      "analogy": "It's like a smart GPS. It knows the roads you've already taken (the real cost) and also uses a map to see the straight-line distance to your destination (the estimated cost). It combines these to find the truly best route, not just the one that looks closest.",
+      "core_mechanism": "Uses a Priority Queue to select the next node based on the formula f(n) = g(n) + h(n).",
+      "time_complexity": "O(E)",
+      "space_complexity": "O(V)",
+      "how_it_works": [
+        "For any given cell, it calculates two values: g(n), the actual cost (number of steps) from the start to that cell, and h(n), the estimated cost to the end.",
+        "The heuristic, h(n), is the 'Manhattan distance': the distance in rows and columns to the exit, ignoring walls. It's an optimistic guess.",
+        "It always explores the cell with the lowest total score f(n). This allows it to ignore bad paths that are long or heading in the wrong direction."
+      ],
+      "advantages": [
+        "Guaranteed to find the shortest path, just like BFS.",
+        "Much more efficient and faster than BFS as it uses an intelligent heuristic to avoid exploring useless paths."
+      ],
+      "disadvantages": [
+        "Slightly more complex to implement than BFS or DFS.",
+        "Its performance is highly dependent on the quality of the heuristic function."
+      ]
+    },
+    "greedy": {
+      "name": "Greedy Best-First Search",
+      "description": "A 'short-sighted' but fast version of A* that makes decisions based only on which path appears to be the best at the moment, ignoring how long it took to get there.",
+      "analogy": "Imagine a hiker trying to reach a mountain peak. At every fork in the road, they choose the path that points most directly towards the peak, without considering if that path is longer or steeper. They are 'greedy' for immediate progress.",
+      "core_mechanism": "Uses a Priority Queue, but only considers the heuristic, h(n), making a 'greedy' choice each time.",
+      "time_complexity": "O(E)",
+      "space_complexity": "O(V)",
+      "how_it_works": [
+        "It uses the same Manhattan distance heuristic as A* to estimate the distance to the exit.",
+        "However, it completely ignores the g(n) cost (the path already traveled). It always expands the node that is estimated to be closest to the goal.",
+        "This makes it advance towards the goal very quickly, but it can be easily tricked by obstacles that force it to take a long detour."
+      ],
+      "advantages": [
+        "Often very fast because it makes simple, aggressive decisions to advance toward the goal.",
+        "Generally more efficient than uninformed searches like BFS or DFS."
+      ],
+      "disadvantages": [
+        "Not guaranteed to find the shortest path.",
+        "Can get stuck in loops and may sometimes fail to find a solution that exists."
+      ]
+    }
+  },
+  "sudoku": {
+    "dfs": {
+        "name": "Depth-First Search (Backtracking)",
+        "description": "A classic brute-force approach that recursively tries every valid number in an empty cell until a solution is found.",
+        "analogy": "It's like a detective who has a list of suspects for a crime. They assume the first suspect is guilty and try to see if all the evidence lines up. If it doesn't, they backtrack, erase their assumption, and try the next suspect on the list.",
+        "core_mechanism": "Uses recursion (which is a form of stack) to explore possibilities and backtrack on failure.",
+        "time_complexity": "O(9^m) where m is the number of empty cells.",
+        "space_complexity": "O(m)",
+        "how_it_works": [
+            "It finds the first empty cell on the board.",
+            "It loops through numbers 1 to 9, and for each number, it checks if placing it in the cell is valid according to Sudoku rules.",
+            "If it's a valid move, it places the number and recursively calls itself to solve the rest of the board.",
+            "If any recursive call fails (hits a dead end with no valid moves), it backtracks by erasing the number and trying the next one in the loop."
+        ],
+        "advantages": [
+            "Guaranteed to find a solution if one exists.",
+            "The logic is relatively straightforward to understand for constraint-based problems."
+        ],
+        "disadvantages": [
+            "Can be extremely slow for difficult puzzles, as the number of branches to explore can be astronomical.",
+            "It's an 'uninformed' search; it doesn't use any strategy to pick which cell to fill first."
+        ]
+    },
+    "astar": {
+        "name": "A* Search (MRV Heuristic)",
+        "description": "An 'informed' search that intelligently chooses which empty cell to fill next based on the Minimum Remaining Values (MRV) heuristic.",
+        "analogy": "Imagine you have a complex puzzle. Instead of starting in the top-left corner, you scan the whole thing and start with the piece that has the fewest possible places it could fit. Solving the most constrained parts first makes the rest of the puzzle easier.",
+        "core_mechanism": "A backtracking algorithm guided by the Minimum Remaining Values (MRV) heuristic.",
+        "time_complexity": "O(9^m)",
+        "space_complexity": "O(m)",
+        "how_it_works": [
+            "Instead of picking the *first* empty cell, it scans the entire board at each step.",
+            "It finds the cell that has the *fewest* possible valid numbers that can be placed in it. This is the MRV heuristic.",
+            "It then performs the same backtracking logic as DFS on that most-constrained cell.",
+            "This strategy prunes the search tree dramatically by failing faster and reducing the number of future choices."
+        ],
+        "advantages": [
+            "Significantly faster than a standard backtracking (DFS) approach.",
+            "Solves much harder puzzles in a fraction of the time by making smarter choices."
+        ],
+        "disadvantages": [
+            "More complex, as it requires re-evaluating all empty cells at each step to find the one with the MRV.",
+            "While faster, it still has the same worst-case time complexity as DFS."
+        ]
+    },
+    "ac3": {
+        "name": "AC-3 Algorithm",
+        "description": "A powerful constraint satisfaction algorithm that simplifies the puzzle by eliminating impossible values from cells *before* starting a search.",
+        "analogy": "A logician reads a complex riddle. Before trying to guess the answer, they first go through all the clues and cross off all the possibilities that are clearly contradicted. This makes the final deduction much simpler.",
+        "core_mechanism": "Enforces arc consistency in a Constraint Satisfaction Problem (CSP).",
+        "time_complexity": "O(n²d³) where n is cells and d is domain size (9).",
+        "space_complexity": "O(nd)",
+        "how_it_works": [
+            "It treats the Sudoku grid as a set of variables (cells) and constraints (row, column, and box rules).",
+            "It maintains a list of all 'arcs' (pairs of cells that constrain each other, e.g., two cells in the same row).",
+            "It processes each arc, checking if a value in one cell's domain has a valid corresponding value in the other. If not, that value is removed.",
+            "This process repeats until no more values can be removed, leaving a much simpler puzzle for a search algorithm to solve."
+        ],
+        "advantages": [
+            "Excellent for pre-processing the board to significantly reduce the search space.",
+            "Can sometimes solve the entire puzzle on its own without needing any searching."
+        ],
+        "disadvantages": [
+            "It is not a complete solver; it only enforces consistency and may not fully solve the puzzle.",
+            "The concept of arc consistency is more complex than simple search algorithms."
+        ]
+    }
+  },
+  "puzzle": {
+    "bfs": {
+      "name": "Breadth-First Search (BFS)",
+      "description": "A methodical search that explores every possible board state layer by layer. This guarantees finding the solution with the fewest moves, but at a very high memory cost.",
+      "analogy": "It's like trying to find the shortest way to solve a Rubik's Cube by first trying every single 1-move combination, then every single 2-move combination, and so on. You're guaranteed to find the best solution, but the number of states to check explodes.",
+      "core_mechanism": "Uses a Queue (FIFO) to explore states in order of their depth (number of moves).",
+      "time_complexity": "O(b^d) where b is the branching factor and d is solution depth.",
+      "space_complexity": "O(b^d)",
+      "how_it_works": [
+        "It begins with the initial board state in a queue.",
+        "It dequeues a state, generates all possible next states (by sliding the blank tile), and enqueues them if they haven't been visited.",
+        "This process repeats, exploring all 1-move states, then all 2-move states, etc.",
+        "Since it explores layer by layer, the first time it reaches the solved state, it must be via the shortest possible path."
+      ],
+      "advantages": [
+        "Guaranteed to find the solution with the absolute minimum number of moves.",
+        "It is a complete algorithm and will always find the solution if one is reachable."
+      ],
+      "disadvantages": [
+        "Extremely memory-intensive. The number of board states to store grows exponentially, making it impractical for harder puzzles.",
+        "Very slow because it explores many useless paths before finding the solution."
+      ]
+    },
+    "astar": {
+      "name": "A* Search",
+      "description": "The most effective solver for sliding puzzles. It uses the 'Manhattan Distance' heuristic to intelligently find the shortest solution in a fraction of the time of BFS.",
+      "analogy": "Imagine each puzzle tile is a taxi that needs to get back to its garage. A* calculates the total number of city blocks all taxis collectively need to travel to get home. It always works on the board state that has the lowest total travel distance remaining.",
+      "core_mechanism": "Uses a Priority Queue with the formula f(n) = g(n) + h(n), where h(n) is the Manhattan Distance.",
+      "time_complexity": "O(b^d)",
+      "space_complexity": "O(b^d)",
+      "how_it_works": [
+        "It prioritizes exploring board states that seem most promising.",
+        "The cost is determined by g(n) = number of moves made so far, and h(n) = the 'Manhattan Distance' (the sum of the distances of each tile from its correct final position).",
+        "By always exploring the state with the lowest total f(n) score, it smartly navigates the huge search space towards the goal.",
+        "The heuristic is 'admissible' (it never overestimates the cost), which guarantees the final solution is optimal."
+      ],
+      "advantages": [
+        "Guaranteed to find the shortest possible solution.",
+        "Vastly more efficient in both time and memory compared to BFS, making it practical for hard puzzles."
+      ],
+      "disadvantages": [
+        "Still requires significant memory for very difficult puzzles, though much less than BFS.",
+        "More complex to implement than simpler search algorithms."
+      ]
+    },
+    "iddfs": {
+      "name": "Iterative Deepening DFS (IDDFS)",
+      "description": "A clever hybrid algorithm that combines the memory-efficiency of DFS with the shortest-path guarantee of BFS.",
+      "analogy": "It's like asking a question with increasing optimism: 'Can this be solved in 1 move? No. Okay, can it be solved in 2 moves? No. Okay, how about 3 moves?' and so on. You repeat the search each time, but you never need to remember all the previous attempts.",
+      "core_mechanism": "Performs a series of repeated, depth-limited Depth-First Searches.",
+      "time_complexity": "O(b^d)",
+      "space_complexity": "O(d)",
+      "how_it_works": [
+        "It first performs a DFS with a depth limit of 1.",
+        "If no solution is found, it discards everything and starts a new DFS from scratch with a depth limit of 2.",
+        "This process repeats, increasing the depth limit by one each time (3, 4, 5...), until the solution is found.",
+        "Because it finds the solution at the shallowest possible depth, it guarantees optimality like BFS, but with the low memory footprint of DFS."
+      ],
+      "advantages": [
+        "Guaranteed to find the shortest path solution.",
+        "Extremely memory efficient, with a space complexity proportional to the solution depth, not the total number of states."
+      ],
+      "disadvantages": [
+        "It re-explores the upper levels of the search tree multiple times, which can be less time-efficient than A*.",
+        "The repeated work can make it slower than A* for many problems."
+      ]
+    }
+  },
+  "pattern_lock": {
+    "bfs": {
+      "name": "Breadth-First Search (BFS)",
+      "description": "Methodically finds the shortest possible valid pattern (in terms of number of dots) by exploring all short patterns before any long ones.",
+      "analogy": "It tries to crack a password by first trying all 1-character passwords, then all 2-character passwords, and so on. It's slow, but it's guaranteed to find the shortest possible password.",
+      "core_mechanism": "Uses a Queue to explore patterns in increasing order of length.",
+      "time_complexity": "O(N!) where N is the number of dots.",
+      "space_complexity": "O(N!)",
+      "how_it_works": [
+        "It explores all valid patterns of length 1, then all valid patterns of length 2, and so on.",
+        "It uses a queue to manage the patterns to be expanded, ensuring a layer-by-layer exploration.",
+        "This guarantees that the first time it finds the target pattern, it has done so with the minimum number of connections."
+      ],
+      "advantages": [
+        "Guaranteed to find the shortest valid pattern in terms of the number of connected dots.",
+        "It is a complete algorithm and will find the pattern if it's possible."
+      ],
+      "disadvantages": [
+        "The number of possible patterns grows factorially, making this approach very slow and memory-intensive for complex patterns.",
+        "Impractical for larger grids (e.g., more than 3x3)."
+      ]
+    },
+    "dfs": {
+      "name": "Depth-First Search (DFS)",
+      "description": "Quickly finds *a* valid pattern, but not necessarily the shortest one, by exploring one sequence of dots as far as possible before backtracking.",
+      "analogy": "It tries to crack a password by starting with 'A', then 'AB', then 'ABC', etc., going as long as possible. If that path fails, it backtracks to 'AB' and tries 'ABD'. It favors depth over breadth.",
+      "core_mechanism": "Uses recursion or a stack to explore one path to its conclusion before trying others.",
+      "time_complexity": "O(N!)",
+      "space_complexity": "O(N)",
+      "how_it_works": [
+        "It starts at a dot and explores a single path of valid connections as deeply as possible.",
+        "If it hits a dead end (no more valid connections) or creates an invalid pattern, it backtracks and tries a different connection.",
+        "It's fast at finding any solution because it dives deep quickly, but the first solution it finds is unlikely to be the shortest."
+      ],
+      "advantages": [
+        "Very memory efficient; only needs to store the current pattern being built.",
+        "Can find a solution very quickly if it happens to guess a correct path early."
+      ],
+      "disadvantages": [
+        "Does not guarantee the shortest or most optimal solution.",
+        "Can spend a long time exploring a very long, incorrect path."
+      ]
+    },
+    "astar": {
+      "name": "A* Search",
+      "description": "Intelligently searches for the target pattern by prioritizing paths that are both short and appear to be correctly matching the target sequence.",
+      "analogy": "It's like a safe-cracker who listens for faint clicks. They prioritize turning the dials that seem to be making progress (the heuristic) while also trying to minimize the total number of turns (the cost).",
+      "core_mechanism": "Uses a Priority Queue with f(n) = g(n) + h(n).",
+      "time_complexity": "O(N!)",
+      "space_complexity": "O(N!)",
+      "how_it_works": [
+        "It uses a heuristic to estimate how 'close' the current pattern is to the target.",
+        "A good heuristic, h(n), could be 'the number of dots NOT yet in the correct sequence from the target pattern'.",
+        "It balances the length of the current pattern, g(n), with this heuristic to find the optimal solution more efficiently than BFS.",
+        "By always exploring the most promising pattern, it avoids many of the useless paths that BFS would check."
+      ],
+      "advantages": [
+        "Guaranteed to find the optimal (shortest) solution.",
+        "Much faster and more efficient than BFS for finding the optimal solution."
+      ],
+      "disadvantages": [
+        "Performance depends heavily on the quality of the heuristic function.",
+        "Still faces a factorial search space, making very complex patterns computationally expensive."
+      ]
+    },
+    "greedy": {
+      "name": "Greedy Best-First Search",
+      "description": "A fast but short-sighted search that always tries to connect to the next dot that makes the pattern look most like the target, ignoring the total length.",
+      "analogy": "A person assembling a puzzle who only looks for the very next piece that fits, without thinking about the overall picture. They might connect pieces that fit together but are in the wrong part of the puzzle.",
+      "core_mechanism": "Uses a Priority Queue that only considers the heuristic value, h(n).",
+      "time_complexity": "O(N!)",
+      "space_complexity": "O(N!)",
+      "how_it_works": [
+        "At each step, it chooses the next connection that maximizes its heuristic value (e.g., adds the next correct dot from the target sequence).",
+        "It completely ignores how many steps it has taken so far, only caring about the immediate best-looking move.",
+        "This can quickly lead to a solution, but it might not be the shortest or best one, as an early 'good' move might lead to a dead end."
+      ],
+      "advantages": [
+        "Very fast decision-making at each step.",
+        "Simple to implement compared to A*."
+      ],
+      "disadvantages": [
+        "Not guaranteed to find the optimal (shortest) pattern.",
+        "Can be easily tricked into following a suboptimal path."
+      ]
+    }
+  },
+  "number_guessing": {
+    "dfs": {
+      "name": "Depth-First Search (Linear Search)",
+      "description": "A highly inefficient approach that simply tries numbers in a sequence (e.g., 1, 2, 3...) until it finds the target. It does not use the 'higher' or 'lower' feedback effectively.",
+      "analogy": "It's like trying to find a specific page in a book by starting at page 1 and turning one page at a time until you find it.",
+      "core_mechanism": "An iterative check, which can be modeled as a single, deep path in a search tree.",
+      "time_complexity": "O(N) where N is the size of the range.",
+      "space_complexity": "O(1)",
+      "how_it_works": [
+        "The algorithm starts at the lowest number in the range.",
+        "It guesses that number. If it's wrong, it simply guesses the next number in sequence (low + 1).",
+        "It continues this linear scan until it finds the target number.",
+        "This strategy completely ignores the valuable 'higher' or 'lower' information, making it a brute-force method."
+      ],
+      "advantages": [
+        "Extremely simple to code and understand.",
+        "Requires virtually no memory."
+      ],
+      "disadvantages": [
+        "Horribly inefficient. The number of guesses can be very high.",
+        "It is the worst possible strategy for this game."
+      ]
+    },
+    "greedy": {
+      "name": "Greedy Search (Binary Search)",
+      "description": "The most efficient strategy possible for number guessing. At each step, it makes a 'greedy' choice to eliminate exactly half of the remaining possibilities.",
+      "analogy": "It's like looking for a name in a phone book. You open to the exact middle. If the name you're looking for comes after, you discard the first half of the book. You repeat this, halving the problem size with every guess.",
+      "core_mechanism": "Divide and Conquer. It greedily cuts the search space in half at each step.",
+      "time_complexity": "O(log N)",
+      "space_complexity": "O(1)",
+      "how_it_works": [
+        "It always guesses the number exactly in the middle of the current valid range (low to high).",
+        "If the guess is too high, the new search range becomes the lower half (from low to middle - 1).",
+        "If the guess is too low, the new search range becomes the upper half (from middle + 1 to high).",
+        "This greedy approach of always maximizing the information gained from a single guess guarantees the solution in the minimum number of steps."
+      ],
+      "advantages": [
+        "Extremely fast and optimal. Finds the number with the fewest possible guesses.",
+        "Highly efficient; the number of guesses grows very slowly even for enormous ranges."
+      ],
+      "disadvantages": [
+        "None for this problem; it is the perfect strategy."
+      ]
+    }
+  },
+  "memory_flip": {
+    "dfs": {
+      "name": "Depth-First Search (Random Flip)",
+      "description": "A naive and inefficient approach that flips cards randomly, attempting to find pairs through pure trial and error, effectively having no memory.",
+      "analogy": "It's like a player with severe short-term memory loss. They flip a card, then flip another at random, hoping for a match. They never learn from what they've seen.",
+      "core_mechanism": "A randomized, recursive search that backtracks on mismatches.",
+      "time_complexity": "O(N!) in the worst case.",
+      "space_complexity": "O(N)",
+      "how_it_works": [
+        "It flips over one unknown card.",
+        "Then, it flips over a second unknown card at random.",
+        "If they match, it recursively continues from the new state. If they don't, it 'backtracks' by flipping them back down and trying a different random card.",
+        "This is highly inefficient because it doesn't use the information from revealed cards."
+      ],
+      "advantages": [
+        "Simple to implement as it requires no complex memory or state tracking.",
+        "Mimics a purely random guessing strategy."
+      ],
+      "disadvantages": [
+        "Extremely inefficient; will take a huge number of moves to complete.",
+        "Does not play the game intelligently in any way."
+      ]
+    },
+    "astar": {
+      "name": "A* Search",
+      "description": "An intelligent, planning-based solver that uses memory of revealed cards and a heuristic to find a solution with a near-optimal number of moves.",
+      "analogy": "A chess master playing the memory game. They don't just react to the cards they see; they plan several moves ahead, prioritizing actions that reveal new information or guarantee a match, to solve the board as efficiently as possible.",
+      "core_mechanism": "A* search on the state space, where each state is the set of known cards and matched pairs.",
+      "time_complexity": "High, depends on state space size.",
+      "space_complexity": "High, depends on state space size.",
+      "how_it_works": [
+        "It maintains a perfect memory of where each revealed card is located.",
+        "Its heuristic, h(n), could be the 'number of remaining unmatched pairs'. It prioritizes states that are closer to solved.",
+        "Its cost, g(n), is the number of flips made.",
+        "It will explore sequences of moves, such as flipping an unknown card versus a known one, to find the most efficient path to solving the board."
+      ],
+      "advantages": [
+        "Can find an optimal or near-optimal solution.",
+        "Represents a true AI planning approach to the game."
+      ],
+      "disadvantages": [
+        "Very complex to implement correctly, as it requires managing a large state space.",
+        "Computationally very expensive and much slower than a simple greedy strategy."
+      ]
+    },
+    "greedy": {
+      "name": "Greedy Search",
+      "description": "A strong and efficient strategy that mimics a good human player. It uses memory to prioritize making immediate, guaranteed matches whenever possible.",
+      "analogy": "A smart human player. They flip an unknown card. If they know where its partner is from a previous turn, they will immediately go for the guaranteed match. That's a 'greedy' move because it scores points right away.",
+      "core_mechanism": "A stateful algorithm that uses a memory map and prioritizes immediate rewards (making a pair).",
+      "time_complexity": "O(N)",
+      "space_complexity": "O(N)",
+      "how_it_works": [
+        "It maintains a memory map of card values and their known locations.",
+        "First, it checks if there are two cards in memory that form a known, unflipped pair. If so, it flips them.",
+        "If not, it flips one unknown card.",
+        "It then checks its memory again: 'Have I seen the matching card for this new card before?' If yes, its next move is to greedily flip that known mate to score a pair. If no, it flips another unknown card."
+      ],
+      "advantages": [
+        "A very effective and relatively simple strategy to implement compared to A*.",
+        "Solves the game efficiently with a low number of moves, very close to how a good human player would."
+      ],
+      "disadvantages": [
+        "May not be strictly optimal in all edge cases, as a more complex plan might be better.",
+        "Its performance depends entirely on the quality of its memory."
+      ]
+    }
+  },
+  "word_search": {
+    "simple": {
+      "name": "Simple Search (Brute Force)",
+      "description": "A straightforward brute-force approach that repeatedly scans the entire grid for each word in the list, checking every possible starting cell and direction.",
+      "analogy": "Imagine you're given one word, 'CAT', and a dictionary. To find it, you start at the first page, first word, and check if it's 'CAT'. Then the second word, and so on. When you're done, you're given the next word, 'DOG', and you have to start all over again from page one.",
+      "core_mechanism": "A series of nested loops that iterate through words, grid cells, and directions.",
+      "time_complexity": "O(W * R * C * L) where W=words, R=rows, C=cols, L=avg word length.",
+      "space_complexity": "O(1)",
+      "how_it_works": [
+        "It takes the first word from the word list.",
+        "It iterates through every single cell in the grid (from top-left to bottom-right).",
+        "If a cell's letter matches the first letter of the word, it then checks in all 8 directions from that cell to see if the full word can be formed.",
+        "It repeats this entire process from scratch for every single word in the list."
+      ],
+      "advantages": [
+        "Very easy to understand the logic and simple to implement.",
+        "Requires no complex data structures or pre-processing."
+      ],
+      "disadvantages": [
+        "Extremely inefficient for large grids or long word lists.",
+        "It does a huge amount of redundant work by re-scanning the grid for each word."
+      ]
+    },
+    "trie": {
+      "name": "Trie Algorithm",
+      "description": "A highly efficient approach using a special tree-like data structure called a Trie (or prefix tree) to find all words in a single, intelligent pass over the grid.",
+      "analogy": "It's like using a search engine's auto-complete. As you type 'TES', it already knows all the words that start that way ('test', 'tesla', etc.). The Trie allows the search to know instantly if the current path of letters could possibly form a valid word, and to stop immediately if it can't.",
+      "core_mechanism": "DFS on the grid, guided by a Trie data structure containing all target words.",
+      "time_complexity": "O(R * C * 4^L) in worst case, but much faster in practice.",
+      "space_complexity": "O(S) where S is the total number of characters in all words.",
+      "how_it_works": [
+        "First, all the words from the word list are inserted into a Trie data structure.",
+        "Then, it iterates through each cell of the grid just once, using each cell as a starting point.",
+        "From each cell, it performs a Depth-First Search in all 8 directions, building up a string of letters.",
+        "At each step of the search, it checks if the current string exists as a prefix in the Trie. If it doesn't, it abandons that path instantly, saving a massive amount of computation."
+      ],
+      "advantages": [
+        "Extremely fast and efficient, especially for large grids.",
+        "It finds all words simultaneously in what is effectively a single pass over the grid."
+      ],
+      "disadvantages": [
+        "Requires building a Trie data structure, which is more complex to implement than the simple approach.",
+        "The Trie itself consumes memory based on the size of the word list."
+      ]
+    }
+  }
+}

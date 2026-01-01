@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Select Puzzle Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="bg-gray-900 text-white p-10 min-h-screen flex flex-col">
+
+    <h1 class="text-4xl mb-10 font-bold text-yellow-400">Select a Puzzle</h1>
+
+    <div id="levelsContainer" class="grid grid-cols-2 md:grid-cols-5 gap-6 flex-grow"></div>
+
+    <div class="mt-10">
+        <a href="/puzzle" class="inline-block px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded text-white font-semibold transition">
+            ⬅️ Back to Puzzle
+        </a>
+    </div>
+
+    <script>
+    const levels = {{ levels | tojson }};
+    const progress = {{ progress | tojson }};
+    const container = document.getElementById('levelsContainer');
+    const difficulties = ['easy', 'medium', 'hard'];
+    const colors = {
+        easy: 'bg-green-500 hover:bg-green-400',
+        medium: 'bg-yellow-500 hover:bg-yellow-400',
+        hard: 'bg-red-500 hover:bg-red-400'
+    };
+
+    for (const difficulty of difficulties) {
+        if (levels[difficulty]) {
+            for (const levelNum in levels[difficulty]) {
+                const levelKey = `puzzle_${difficulty}-${levelNum}`;
+                const levelProgress = progress[levelKey];
+                
+                const isPlayed = !!levelProgress?.human_time;
+
+                const userTimeHtml = levelProgress?.human_time ? `<div class="text-xs text-black bg-white/40 rounded px-2 py-0.5 mb-1">🧍 You: ${levelProgress.human_time}s</div>` : '';
+                const astarTimeHtml = levelProgress?.astar_time ? `<div class="text-xs bg-white/40 rounded px-2 py-0.5 mb-1" style="color: #b83280;">🤖 A*: ${parseFloat(levelProgress.astar_time).toFixed(7)}s</div>` : '';
+                const bfsTimeHtml = levelProgress?.bfs_time ? `<div class="text-xs bg-white/40 rounded px-2 py-0.5 mb-1" style="color: #2b6cb0;">🤖 BFS: ${parseFloat(levelProgress.bfs_time).toFixed(7)}s</div>` : '';
+                const iddfsTimeHtml = levelProgress?.iddfs_time ? `<div class="text-xs bg-white/40 rounded px-2 py-0.5 mb-1" style="color: #6b46c1;">🤖 IDDFS: ${parseFloat(levelProgress.iddfs_time).toFixed(7)}s</div>` : '';
+
+                const btn = document.createElement('a');
+                btn.href = `/level/puzzle/${difficulty}/${levelNum}`;
+                btn.className = `flex flex-col items-center justify-center p-4 rounded-lg ${colors[difficulty]} text-black font-semibold transition`;
+                
+                btn.innerHTML = `
+                    <span class="text-lg font-bold">${difficulty.toUpperCase()} Level ${levelNum}</span>
+                    ${isPlayed ? '<i class="fas fa-star text-black text-xl mt-2"></i>' : '<i class="far fa-star text-black text-xl mt-2"></i>'}
+                    <div class="flex flex-col items-start mt-2 w-full pl-2">
+                        ${userTimeHtml}
+                        ${astarTimeHtml}
+                        ${bfsTimeHtml}
+                        ${iddfsTimeHtml}
+                    </div>
+                `;
+                container.appendChild(btn);
+            }
+        }
+    }
+</script>
+</body>
+</html>

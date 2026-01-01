@@ -1,0 +1,23 @@
+{
+  "easy": {
+    "1": { "word": "PYTHON", "hint": "A popular programming language" },
+    "2": { "word": "FLASK", "hint": "A micro web framework for Python" },
+    "3": { "word": "HTML", "hint": "Markup language for web pages" },
+    "4": { "word": "ALGO", "hint": "Short for algorithm" },
+    "5": { "word": "PLAY", "hint": "To engage in activity for enjoyment" }
+  },
+  "medium": {
+    "1": { "word": "JAVASCRIPT", "hint": "The programming language of the Web" },
+    "2": { "word": "LEADERBOARD", "hint": "A ranking of players" },
+    "3": { "word": "TEMPLATE", "hint": "A preset format, used in web development" },
+    "4": { "word": "DATABASE", "hint": "An organized collection of data" },
+    "5": { "word": "NETWORK", "hint": "A group of connected computers" }
+  },
+  "hard": {
+    "1": { "word": "AUTHENTICATION", "hint": "The process of verifying a user's identity" },
+    "2": { "word": "ENCRYPTION", "hint": "Securing data by converting it into code" },
+    "3": { "word": "FRAMEWORK", "hint": "A foundational structure for software development" },
+    "4": { "word": "RECURSION", "hint": "A function that calls itself" },
+    "5": { "word": "VIRTUALIZATION", "hint": "Creating a virtual version of a resource" }
+  }
+}

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Memory Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        .card-container { perspective: 1000px; }
+        .card {
+            width: 100%; height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+        .card.is-flipped { transform: rotateY(180deg); }
+        .card-face {
+            position: absolute; width: 100%; height: 100%;
+            -webkit-backface-visibility: hidden; backface-visibility: hidden;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; font-size: 2rem; font-weight: bold;
+        }
+        .card-front { background-color: #4A5568; color: white; }
+        .card-back { background-color: #A0AEC0; color: #1A202C; transform: rotateY(180deg); }
+        .is-matched { opacity: 0.7; pointer-events: none; }
+        .no-events { pointer-events: none; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-10 min-h-screen flex flex-col items-center">
+
+    <div class="text-center mb-6">
+        <h1 class="text-4xl font-bold text-green-400">Memory Flip</h1>
+        <h2 class="text-2xl text-gray-400">{{ difficulty.capitalize() }} Level {{ level }}</h2>
+    </div>
+
+    <div class="flex justify-center gap-4 mb-6">
+        <a href="/memory/levels" class="px-4 py-2 bg-blue-500 text-black rounded font-bold hover:bg-blue-400">⬅️ Levels</a>
+        <button id="start-btn" class="px-4 py-2 bg-green-500 text-black rounded font-bold hover:bg-green-400">▶️ Start / Reset</button>
+        <button onclick="location.reload()" class="px-4 py-2 bg-yellow-500 text-black rounded font-bold hover:bg-yellow-400">🔁 New Game</button>
+        {% if level < 5 %}
+            <a href="/level/memory/{{ difficulty }}/{{ level + 1 }}" class="px-4 py-2 bg-green-600 text-black rounded font-bold hover:bg-green-500">Next Level ➡️</a>
+        {% endif %}
+    </div>
+
+    <div class="flex flex-row gap-8 items-start">
+        <div class="flex flex-col gap-3">
+            <button onclick="runAI('Greedy')" class="ai-btn px-4 py-2 bg-teal-500 text-black rounded w-32 font-bold">Run Greedy</button>
+            <button onclick="runAI('A*')" class="ai-btn px-4 py-2 bg-pink-500 text-black rounded w-32 font-bold">Run A*</button>
+            <button onclick="runAI('DFS')" class="ai-btn px-4 py-2 bg-purple-500 text-black rounded w-32 font-bold">Run DFS</button>
+        </div>
+
+        <div id="game-board" class="grid gap-4 no-events opacity-60" style="grid-template-columns: repeat({{ cols }}, 1fr);"></div>
+
+        <div class="flex flex-col gap-4 text-sm w-80">
+            <div class="p-3 rounded bg-green-800/20 border border-green-400">
+                <div class="font-bold text-green-400">Your Stats</div>
+                <div>Time: <span id="user-time">0.00</span>s</div>
+                <div>Moves: <span id="user-moves">0</span></div>
+            </div>
+             <div class="p-3 rounded bg-teal-800/20 border border-teal-400">
+                <div class="font-bold text-teal-400">Greedy Stats</div>
+                <div>Time: <span id="Greedy-time">N/A</span></div>
+                <div>Moves: <span id="Greedy-moves">N/A</span></div>
+            </div>
+            <div class="p-3 rounded bg-pink-800/20 border border-pink-400">
+                <div class="font-bold text-pink-400">A* Stats</div>
+                <div>Time: <span id="A-star-time">N/A</span></div>
+                <div>Moves: <span id="A-star-moves">N/A</span></div>
+            </div>
+            <div class="p-3 rounded bg-purple-800/20 border border-purple-400">
+                <div class="font-bold text-purple-400">DFS Stats</div>
+                <div>Time: <span id="DFS-time">N/A</span></div>
+                <div>Moves: <span id="DFS-moves">N/A</span></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const boardData = {{ board | tojson | safe }};
+        const levelKey = `memory_{{ difficulty }}-{{ level }}`;
+        const gameBoard = document.getElementById('game-board');
+        const startBtn = document.getElementById('start-btn');
+
+        let firstCard = null, secondCard = null;
+        let lockBoard = false;
+        let userMoves = 0;
+        let matchedPairs = 0;
+        let timerInterval = null;
+        let startTime = null;
+        let gameActive = false;
+
+        function createBoard() {
+            gameBoard.innerHTML = '';
+            boardData.forEach((val, index) => {
+                const cardContainer = document.createElement('div');
+                cardContainer.className = 'card-container h-24 w-24';
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.index = index;
+                card.innerHTML = `
+                    <div class="card-face card-front"><i class="fas fa-question"></i></div>
+                    <div class="card-face card-back">${val}</div>
+                `;
+                card.addEventListener('click', handleCardClick);
+                cardContainer.appendChild(card);
+                gameBoard.appendChild(cardContainer);
+            });
+        }
+        
+        function resetAndPlay() {
+            gameActive = false;
+            if (timerInterval) clearInterval(timerInterval);
+            firstCard = null;
+            secondCard = null;
+            lockBoard = false;
+            userMoves = 0;
+            matchedPairs = 0;
+            document.getElementById('user-time').innerText = '0.00';
+            document.getElementById('user-moves').innerText = '0';
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('is-flipped', 'is-matched');
+            });
+            gameActive = true;
+            gameBoard.classList.remove('no-events', 'opacity-60');
+            startTimer();
+        }
+
+        function handleCardClick(e) {
+            if (!gameActive || lockBoard) return;
+            const clickedCard = e.currentTarget;
+            if (clickedCard === firstCard || clickedCard.classList.contains('is-flipped')) return;
+            clickedCard.classList.add('is-flipped');
+            if (!firstCard) {
+                firstCard = clickedCard;
+                return;
+            }
+            secondCard = clickedCard;
+            lockBoard = true;
+            userMoves++;
+            document.getElementById('user-moves').innerText = userMoves;
+            checkForMatch();
+        }
+        
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const time = ((Date.now() - startTime) / 1000).toFixed(2);
+                document.getElementById('user-time').innerText = time;
+            }, 100);
+        }
+
+        function checkForMatch() {
+            const isMatch = boardData[firstCard.dataset.index] === boardData[secondCard.dataset.index];
+            isMatch ? disableCards() : unflipCards();
+        }
+
+        function disableCards() {
+            firstCard.classList.add('is-flipped', 'is-matched');
+            secondCard.classList.add('is-flipped', 'is-matched');
+            
+            matchedPairs++;
+            if (matchedPairs === boardData.length / 2) endGame();
+            
+            resetTurn();
+        }
+        
+        function unflipCards() {
+            setTimeout(() => {
+                firstCard.classList.remove('is-flipped');
+                secondCard.classList.remove('is-flipped');
+                resetTurn();
+            }, 1200);
+        }
+
+        function resetTurn() {
+            [firstCard, secondCard, lockBoard] = [null, null, false];
+        }
+        
+        function endGame() {
+            if (timerInterval) clearInterval(timerInterval);
+            gameActive = false;
+            const finalTime = document.getElementById('user-time').innerText;
+            fetch(`/mark_game_played/${levelKey}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ human_time: finalTime, human_moves: userMoves })
+            });
+            setTimeout(() => alert(`🎉 You won in ${finalTime}s with ${userMoves} moves!`), 500);
+        }
+
+        function runAI(algo) {
+            const algoKey = algo.replace('*','-star');
+            document.getElementById(`${algoKey}-time`).innerHTML = `Solving...`;
+            document.getElementById(`${algoKey}-moves`).innerHTML = `...`;
+            gameBoard.classList.add('no-events');
+            
+            fetch('/solve_memory', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ board: boardData, algorithm: algo, level_key: levelKey })
+            })
+            .then(res => res.json())
+            .then(data => {
+                // ✅ MODIFIED: Uses the AI's actual time and formats it to 7 decimal places.
+                document.getElementById(`${algoKey}-time`).innerText = parseFloat(data.ai_time).toFixed(7) + 's';
+                document.getElementById(`${algoKey}-moves`).innerText = data.moves;
+                animateAI(data.path);
+            });
+        }
+        
+        function animateAI(path) {
+            let i = 0;
+            const allCards = Array.from(document.querySelectorAll('.card'));
+            const userMatchedIndices = allCards
+                .map((card, index) => card.classList.contains('is-matched') ? index : -1)
+                .filter(index => index !== -1);
+            allCards.forEach(card => card.classList.remove('is-flipped', 'is-matched'));
+            function flipNextPair() {
+                if (i >= path.length) {
+                    allCards.forEach((card, index) => {
+                        if (userMatchedIndices.includes(index)) {
+                            card.classList.add('is-flipped', 'is-matched');
+                        }
+                    });
+                    if (!gameActive) {
+                         gameBoard.classList.remove('no-events');
+                    }
+                    return;
+                }
+                const idx1 = path[i];
+                const idx2 = path[i+1];
+                const card1 = allCards[idx1];
+                const card2 = allCards[idx2];
+                setTimeout(() => {
+                    card1.classList.add('is-flipped');
+                    card2.classList.add('is-flipped');
+                    const isMatch = boardData[idx1] === boardData[idx2];
+                    if (isMatch) {
+                        card1.classList.add('is-matched');
+                        card2.classList.add('is-matched');
+                        i += 2;
+                        setTimeout(flipNextPair, 700);
+                    } else {
+                        setTimeout(() => {
+                            card1.classList.remove('is-flipped');
+                            card2.classList.remove('is-flipped');
+                            i += 2;
+                            flipNextPair();
+                        }, 1200);
+                    }
+                }, 400);
+            }
+            flipNextPair();
+        }
+
+        startBtn.addEventListener('click', resetAndPlay);
+        createBoard();
+
+        // Starfield animation
+        const starField = document.getElementById('star-field');
+        if (starField && !starField.hasChildNodes()) {
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 3;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.animationDuration = `${2 + Math.random() * 3}s`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                starField.appendChild(star);
+            }
+        }
+    </script>
+</body>
+</html>

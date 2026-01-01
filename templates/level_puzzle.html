@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Puzzle | {{ difficulty.upper() }} Level {{ level }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --grid-size: {{ grid_size }};
+            --tile-size: 100px;
+        }
+        .grid-size-4 { --tile-size: 80px; }
+        .tile { 
+            width: var(--tile-size); 
+            height: var(--tile-size); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 2rem; 
+            font-weight: bold; 
+            background-color: #4A5568; 
+            border: 2px solid #2D3748; 
+            border-radius: 4px;
+            cursor: pointer; 
+            transition: background-color 0.2s, transform 0.2s; 
+            user-select: none; 
+        }
+        .tile:hover { background-color: #718096; }
+        .empty { background-color: #2D3748; cursor: default; }
+        #puzzle-grid { 
+            display: grid; 
+            grid-template-columns: repeat(var(--grid-size), var(--tile-size)); 
+            gap: 5px; 
+        }
+        .solution-panel { max-height: 350px; overflow-y: auto; }
+
+        /* Custom Modal for Win Message */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: #2D3748;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        .star-field {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0C0A1A;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { transform: scale(0.5); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-10 min-h-screen flex flex-col items-center">
+
+    <div id="star-field" class="star-field"></div>
+
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-yellow-400">Puzzle Solver</h1>
+        <h2 class="text-2xl text-gray-400">{{ difficulty.capitalize() }} Level {{ level }}</h2>
+    </div>
+
+    <div class="w-full max-w-7xl flex justify-center">
+        <div class="flex justify-end gap-4 mb-6">
+            <a href="/puzzle/levels" class="px-4 py-2 bg-blue-500 text-black rounded font-bold hover:bg-blue-400">⬅️ Levels</a>
+            <button id="start-btn" class="px-4 py-2 bg-green-500 text-black rounded font-bold hover:bg-green-400">▶️ Start Play</button>
+            <button onclick="location.reload()" class="px-4 py-2 bg-yellow-500 text-black rounded font-bold hover:bg-yellow-400">🔁 Restart</button>
+            {% if next_level %}
+                <a href="/level/puzzle/{{ difficulty }}/{{ next_level }}" class="px-4 py-2 bg-green-600 text-black rounded font-bold hover:bg-green-500">Next Level ➡️</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="flex flex-row gap-8 items-start">
+        <div class="flex flex-col gap-3">
+            <div class="flex items-center gap-2">
+                <button onclick="runAI('A*')" class="ai-btn px-4 py-2 bg-pink-500 text-black font-bold rounded w-28">Run A*</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="runAI('BFS')" class="ai-btn px-4 py-2 bg-blue-500 text-black font-bold rounded w-28">Run BFS</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="runAI('IDDFS')" class="ai-btn px-4 py-2 bg-purple-500 text-black font-bold rounded w-28">Run IDDFS</button>
+            </div>
+            <button id="reset-puzzle-btn" class="px-6 py-3 bg-gray-600 text-white font-semibold rounded hover:bg-gray-500 transition mt-2 w-full">
+                Reset Puzzle
+            </button>
+        </div>
+
+        <div id="puzzle-container" class="p-2 bg-gray-800 rounded-md">
+            <div id="puzzle-grid"></div>
+        </div>
+
+        <div class="flex flex-col gap-4 text-sm w-80">
+            <div class="p-3 rounded bg-yellow-800/20 border border-yellow-400">
+                <div class="font-bold text-yellow-400">Your Stats</div>
+                <div>Moves: <span id="moves-count">0</span></div>
+                <div>Time: <span id="userTime">0.00s</span></div>
+            </div>
+            <div class="p-3 rounded bg-pink-800/20 border border-pink-400">
+                <div class="font-bold text-pink-400">A* Solver</div>
+                <div>Time: <span id="A-star-time">N/A</span></div>
+            </div>
+            <div class="p-3 rounded bg-blue-800/20 border border-blue-400">
+                <div class="font-bold text-blue-400">BFS Solver</div>
+                <div>Time: <span id="BFS-time">N/A</span></div>
+            </div>
+            <div class="p-3 rounded bg-purple-800/20 border border-purple-400">
+                <div class="font-bold text-purple-400">IDDFS Solver</div>
+                <div>Time: <span id="IDDFS-time">N/A</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Win Message Modal -->
+    <div id="win-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-3xl font-bold text-green-400 mb-4">🎉 Puzzle Solved! 🎉</h2>
+            <p id="win-message" class="text-lg mb-6"></p>
+            <button id="close-modal-btn" class="px-6 py-2 bg-green-500 text-black font-bold rounded hover:bg-green-400">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('puzzle-grid');
+        const resetPuzzleBtn = document.getElementById('reset-puzzle-btn');
+        const userTimeEl = document.getElementById('userTime');
+        const movesCountEl = document.getElementById('moves-count');
+        const startBtn = document.getElementById('start-btn');
+        const winModal = document.getElementById('win-modal');
+        const winMessage = document.getElementById('win-message');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        
+        const difficulty = "{{ difficulty }}";
+        const level = "{{ level }}";
+        const levelKey = `puzzle_${difficulty}-${level}`;
+        const gridSize = {{ grid_size }};
+        
+        const initialTiles = {{ initial_state | tojson }};
+        let tiles = [...initialTiles];
+        const solvedState = Array.from({ length: gridSize * gridSize - 1 }, (_, i) => i + 1).concat([0]);
+
+        let userStart = null;
+        let userTimer = null;
+        let moves = 0;
+        let gameActive = false;
+        
+        if (gridSize === 4) {
+            document.getElementById('puzzle-container').classList.add('grid-size-4');
+        }
+
+        function startUserTimer() {
+            if (!userStart) {
+                gameActive = true;
+                startBtn.disabled = true;
+                startBtn.style.opacity = '0.5';
+                userStart = Date.now();
+                userTimer = setInterval(() => {
+                    userTimeEl.innerText = ((Date.now() - userStart) / 1000).toFixed(2) + 's';
+                }, 100);
+            }
+        }
+        
+        startBtn.addEventListener('click', startUserTimer);
+        closeModalBtn.addEventListener('click', () => winModal.classList.remove('visible'));
+
+        function resetPuzzleState() {
+            if (userTimer) clearInterval(userTimer);
+            userStart = null;
+            userTimer = null;
+            moves = 0;
+            gameActive = false;
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            userTimeEl.innerText = '0.00s';
+            movesCountEl.innerText = '0';
+            tiles = [...initialTiles];
+            document.querySelectorAll('.ai-btn').forEach(b => b.disabled = false);
+            renderGrid();
+        }
+        resetPuzzleBtn.addEventListener('click', resetPuzzleState);
+
+        function renderGrid() {
+            grid.innerHTML = '';
+            tiles.forEach((num, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                if (num === 0) {
+                    tile.classList.add('empty');
+                } else {
+                    tile.textContent = num;
+                }
+                tile.dataset.index = index;
+                tile.addEventListener('click', handleTileClick);
+                grid.appendChild(tile);
+            });
+        }
+
+        function handleTileClick(event) {
+            if (!gameActive) return;
+            const clickedIndex = parseInt(event.target.dataset.index);
+            const emptyIndex = tiles.indexOf(0);
+            
+            const [row, col] = [Math.floor(clickedIndex / gridSize), clickedIndex % gridSize];
+            const [emptyRow, emptyCol] = [Math.floor(emptyIndex / gridSize), emptyIndex % gridSize];
+
+            const isAdjacent = Math.abs(row - emptyRow) + Math.abs(col - emptyCol) === 1;
+
+            if (isAdjacent) {
+                [tiles[clickedIndex], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[clickedIndex]];
+                moves++;
+                movesCountEl.innerText = moves;
+                renderGrid();
+                checkWin();
+            }
+        }
+
+        function checkWin() {
+            if (JSON.stringify(tiles) === JSON.stringify(solvedState)) {
+                if (userTimer) clearInterval(userTimer);
+                gameActive = false;
+                const timeTaken = parseFloat(userTimeEl.innerText).toFixed(2);
+                
+                // CRITICAL FIX 1: Use the correct generic route
+                fetch(`/mark_game_played/${levelKey}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    // CRITICAL FIX 2: Use 'human_time' to match the backend
+                    body: JSON.stringify({ human_time: timeTaken, human_moves: moves })
+                });
+
+                winMessage.textContent = `You solved it in ${timeTaken} seconds and ${moves} moves!`;
+                winModal.classList.add('visible');
+            }
+        }
+
+        function runAI(algo) {
+            const algoKey = algo.replace('*','-star');
+            const timeEl = document.getElementById(`${algoKey}-time`);
+            if (timeEl) {
+                timeEl.innerHTML = `Solving...`;
+            }
+            
+            document.querySelectorAll('.ai-btn').forEach(b => b.disabled = true);
+
+            fetch(window.location.pathname, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ initial_state: initialTiles, algorithm: algo })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.solution) {
+                    if (timeEl) timeEl.innerText = `${parseFloat(data.ai_time).toFixed(4)}s`;
+                    animateSolution(data.solution);
+                } else {
+                    if (timeEl) timeEl.textContent = `No solution found.`;
+                    document.querySelectorAll('.ai-btn').forEach(b => b.disabled = false);
+                }
+            });
+        }
+        
+        function animateSolution(solution) {
+            solution.forEach((step, i) => {
+                setTimeout(() => {
+                    tiles = step;
+                    renderGrid();
+                    if (i === solution.length - 1) {
+                        document.querySelectorAll('.ai-btn').forEach(b => b.disabled = false);
+                    }
+                }, i * 200);
+            });
+        }
+
+        renderGrid();
+
+        // Starfield animation
+        const starField = document.getElementById('star-field');
+        if (starField && !starField.hasChildNodes()) {
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 3;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.animationDuration = `${2 + Math.random() * 3}s`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                starField.appendChild(star);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+{
+  "krish05@gmail.com": {
+    "maze_easy-1": {
+      "bfs_time": "0.000182899996",
+      "dfs_time": "0.000048199989",
+      "astar_time": "0.000058800000",
+      "greedy_time": "0.000101900001",
+      "human_time": "3.60"
+    },
+    "maze_hard-1": {
+      "bfs_time": "0.000416700001",
+      "dfs_time": "0.000148400024",
+      "astar_time": "0.000866999995",
+      "greedy_time": "0.000167000020",
+      "human_time": "10.80"
+    },
+    "puzzle_hard-1": {
+      "astar_time": "0.0044864000"
+    },
+    "puzzle_hard-2": {
+      "astar_time": "0.0312928000"
+    },
+    "puzzle_hard-5": {
+      "astar_time": "50.7109212000"
+    },
+    "sudoku_easy-1": {
+      "dfs_time": "0.043420300004",
+      "astar_time": "0.011285900022",
+      "human_time": "143.82",
+      "ac3_time": "0.155738100002"
+    },
+    "sudoku_medium-1": {
+      "astar_time": "1.593235800000",
+      "dfs_time": "0.025160600002",
+      "ac3_time": "0.181082300000"
+    },
+    "sudoku_easy-2": {
+      "dfs_time": "0.042038799998",
+      "astar_time": "0.014989500000"
+    },
+    "puzzle_easy-1": {
+      "astar_time": "0.0000634000",
+      "human_time": "2.70",
+      "iddfs_time": "0.0000936000",
+      "bfs_time": "0.0000796000",
+      "human_moves": 2
+    },
+    "sudoku_hard-5": {
+      "astar_time": "0.458766700000",
+      "dfs_time": "0.091830200000"
+    },
+    "sudoku_hard-1": {
+      "astar_time": "11.304449100000",
+      "ac3_time": "10.335649200000"
+    },
+    "maze_easy-2": {
+      "human_time": "17.10",
+      "bfs_time": "0.000066900015",
+      "dfs_time": "0.000088300000"
+    },
+    "puzzle_easy-2": {
+      "astar_time": "0.0000626000",
+      "human_time": "5.00",
+      "human_moves": 5
+    },
+    "maze_medium-1": {
+      "bfs_time": "0.000121900004",
+      "dfs_time": "0.000061300001",
+      "human_time": "4.41"
+    },
+    "number_guessing_easy-1": {
+      "human_guesses": 1,
+      "human_time": "1.91s",
+      "greedy_guesses": 6,
+      "greedy_time": "0.000003600000",
+      "dfs_guesses": 37,
+      "dfs_time": "0.000005700000"
+    },
+    "number_guessing_easy-2": {
+      "human_guesses": 5,
+      "human_time": "12.61s",
+      "greedy_guesses": 2,
+      "greedy_time": "0.000003000000",
+      "dfs_guesses": 14,
+      "dfs_time": "0.000004100000"
+    },
+    "number_guessing_easy-3": {
+      "human_guesses": 1,
+      "human_time": "1.91s",
+      "greedy_guesses": 1,
+      "greedy_time": "0.000001600000",
+      "dfs_guesses": 1,
+      "dfs_time": "0.000004000000"
+    },
+    "number_guessing_easy-4": {
+      "human_guesses": 1,
+      "human_time": "1.80s",
+      "greedy_guesses": 6,
+      "greedy_time": "0.000003300000",
+      "dfs_guesses": 48,
+      "dfs_time": "0.000006000000"
+    },
+    "maze_easy-3": {
+      "bfs_time": "0.000088200000",
+      "dfs_time": "0.000043500000",
+      "human_time": "5.10"
+    },
+    "crossword_easy-1": {
+      "human_time": "9.90"
+    },
+    "crossword_easy-2": {
+      "human_time": "7.80"
+    },
+    "math_quiz_easy-1": {
+      "user_score": 5,
+      "time_taken": 21
+    },
+    "word_search_easy-1": {
+      "human_time": "16.41",
+      "simple_time": "0.000221700000",
+      "trie_time": "0.000168899976"
+    },
+    "word_search_easy-2": {
+      "human_time": "11.80",
+      "simple_time": "0.000656199991",
+      "trie_time": "0.000285400005"
+    },
+    "math_quiz_easy-2": {
+      "user_score": 3,
+      "time_taken": 46
+    },
+    "memory_easy-1": {
+      "greedy_time": "0.000033899996",
+      "greedy_moves": 4,
+      "astar_time": "0.000581900007",
+      "astar_moves": 4,
+      "dfs_time": "0.000008400006",
+      "dfs_moves": 4,
+      "human_time": "13.30",
+      "human_moves": 6
+    },
+    "hangman_easy-1": {
+      "status": "lost",
+      "incorrect_guesses": 6,
+      "time_taken": 23.01
+    },
+    "pattern_lock_easy-1": {
+      "human_time": "1.90",
+      "bfs_time": "0.000014499994",
+      "dfs_time": "0.000046799993",
+      "astar_time": "0.000016899998",
+      "greedy_time": "0.000016699996"
+    },
+    "pattern_lock_medium-1": {
+      "human_time": "3.10"
+    },
+    "maze_medium-2": {
+      "bfs_time": "0.000394099989",
+      "dfs_time": "0.000424700003"
+    },
+    "pattern_lock_medium-2": {
+      "human_time": "3.20"
+    },
+    "number_guessing_hard-1": {
+      "human_guesses": 11,
+      "human_time": "82.41s"
+    },
+    "hangman_hard-1": {
+      "status": "won",
+      "time_taken": 26.2,
+      "incorrect_guesses": 0
+    },
+    "pattern_lock_easy-3": {
+      "human_time": "1.7070000"
+    },
+    "hangman_medium-1": {
+      "status": "won",
+      "time_taken": 31.81,
+      "incorrect_guesses": 0
+    },
+    "hangman_medium-2": {
+      "status": "won",
+      "time_taken": 123.41,
+      "incorrect_guesses": 2
+    },
+    "hangman_medium-3": {
+      "status": "lost",
+      "time_taken": 67,
+      "incorrect_guesses": 6
+    },
+    "memory_hard-1": {
+      "human_time": "29.41",
+      "human_moves": 11,
+      "astar_time": "0.040733800000",
+      "astar_moves": 8
+    },
+    "pattern_lock_easy-2": {
+      "human_time": "1.80",
+      "bfs_time": 2.1100015146657825e-05,
+      "astar_time": 3.259998629800975e-05,
+      "greedy_time": 3.2199983252212405e-05,
+      "dfs_time": 1.8399994587525725e-05
+    },
+    "maze_medium-3": {
+      "dfs_time": "0.000056299992",
+      "greedy_time": "0.000140299991"
+    },
+    "pattern_lock_easy-4": {
+      "bfs_time": 2.5399989681318402e-05,
+      "dfs_time": 1.9800005247816443e-05
+    },
+    "maze_easy-4": {
+      "bfs_time": "0.000068499998"
+    },
+    "pattern_lock_hard-1": {
+      "human_time": "5.2020000"
+    },
+    "word_search_easy-3": {
+      "simple_time": "0.000525500014",
+      "trie_time": "0.000245800009"
+    },
+    "number_guessing_medium-$1": {
+      "human_guesses": 1,
+      "human_time": "3.90s",
+      "greedy_guesses": 3,
+      "greedy_time": "0.000002699991",
+      "dfs_guesses": 88,
+      "dfs_time": "0.000009699987"
+    },
+    "maze_hard-2": {
+      "bfs_time": "0.000203600008",
+      "astar_time": "0.000342400017",
+      "greedy_time": "0.000180400006"
+    },
+    "puzzle_medium-1": {
+      "astar_time": "0.0009040000"
+    },
+    "sudoku_medium-2": {
+      "ac3_time": "0.186732900009",
+      "astar_time": "0.578642500011"
+    },
+    "memory_easy-2": {
+      "greedy_time": "0.000106899999",
+      "greedy_moves": 4
+    },
+    "memory_medium-1": {
+      "astar_time": "0.002719199983",
+      "astar_moves": 6
+    },
+    "pattern_lock_hard-2": {
+      "human_time": "5.1060000"
+    },
+    "pattern_lock_medium-3": {
+      "bfs_time": 2.4599983589723706e-05
+    },
+    "pattern_lock_hard-3": {
+      "dfs_time": 3.1800009310245514e-05
+    },
+    "pattern_lock_hard-4": {
+      "astar_time": 5.040000542066991e-05
+    },
+    "number_guessing_medium-1": {
+      "human_guesses": 1,
+      "human_time": "2.10s",
+      "greedy_guesses": 3,
+      "greedy_time": "0.000005399983"
+    },
+    "number_guessing_medium-2": {
+      "human_guesses": 5,
+      "human_time": "18.11s",
+      "greedy_guesses": 6,
+      "greedy_time": "0.000004300004",
+      "dfs_guesses": 32,
+      "dfs_time": "0.000012499979"
+    }
+  },
+  "darpanmeher1346@gmail.com": {
+    "maze_easy-1": {
+      "bfs_time": "0.000123599995",
+      "dfs_time": "0.000034999990",
+      "astar_time": "0.000056800010",
+      "human_time": "3.50",
+      "greedy_time": "0.000049599999"
+    },
+    "puzzle_easy-1": {
+      "astar_time": "0.0000974000",
+      "bfs_time": "0.0000886000",
+      "iddfs_time": "0.0014371000",
+      "human_time": "1.2880000000"
+    },
+    "maze_hard-1": {
+      "bfs_time": "0.000223899988",
+      "dfs_time": "0.000062699997",
+      "astar_time": "0.001228900001",
+      "greedy_time": "0.000214400003",
+      "human_time": "12.40"
+    },
+    "puzzle_easy-2": {
+      "astar_time": "0.0001115000",
+      "bfs_time": "0.0001440000",
+      "iddfs_time": "0.0003887000"
+    }
+  },
+  "sahilghadi_02@gmail.com": {
+    "hangman_medium-5": {
+      "status": "won",
+      "time_taken": 25.1,
+      "incorrect_guesses": 0
+    },
+    "maze_hard-2": {
+      "bfs_time": "0.000241300000",
+      "dfs_time": "0.000137000000"
+    },
+    "crossword_easy-1": {
+      "human_time": "21.01"
+    },
+    "memory_easy-1": {
+      "human_time": "9.30",
+      "human_moves": 5
+    },
+    "math_quiz_easy-1": {
+      "user_score": 4,
+      "time_taken": 12
+    },
+    "hangman_easy-1": {
+      "status": "won",
+      "time_taken": 9.2,
+      "incorrect_guesses": 0
+    },
+    "pattern_lock_easy-1": {
+      "human_time": "0.90"
+    },
+    "puzzle_easy-1": {
+      "astar_time": "0.0000927999",
+      "human_time": "3.50",
+      "human_moves": 4
+    },
+    "maze_easy-1": {
+      "human_time": "3.70"
+    },
+    "sudoku_easy-1": {
+      "astar_time": "0.015159700008"
+    },
+    "word_search_easy-1": {
+      "human_time": "6.80"
+    }
+  }
+}

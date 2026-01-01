@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Maze Level</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        /* Custom Modal for Win Message */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: #2D3748;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        .maze-container.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        .star-field {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0C0A1A;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { transform: scale(0.5); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-10 min-h-screen flex flex-col items-center">
+    <div id="star-field" class="star-field"></div>
+
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-green-400">Maze Solver</h1>
+        <h2 class="text-2xl text-gray-400">{{ difficulty.capitalize() }} Level {{ level }}</h2>
+    </div>
+
+    <div class="w-full max-w-7xl flex justify-center">
+        <div class="flex justify-center gap-4 mb-6">
+            <a href="/maze_solver/levels" class="px-4 py-2 bg-blue-500 text-black rounded font-bold hover:bg-blue-400">⬅️ Levels</a>
+            <button id="start-btn" class="px-4 py-2 bg-green-500 text-black rounded font-bold hover:bg-green-400">▶️ Start Play</button>
+            <button onclick="location.reload()" class="px-4 py-2 bg-yellow-500 text-black rounded font-bold hover:bg-yellow-400">🔁 Restart</button>
+            {% if level < 5 %}
+                <a href="/level/maze/{{ difficulty }}/{{ level + 1 }}" class="px-4 py-2 bg-green-600 text-black rounded font-bold hover:bg-green-500">Next Level ➡️</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="flex flex-row gap-8 items-start">
+        <div class="flex flex-col gap-3">
+            <div class="flex items-center gap-2">
+                <button onclick="runAI('BFS')" class="ai-btn px-4 py-2 bg-blue-500 text-black rounded w-28 font-bold">Run BFS</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="runAI('DFS')" class="ai-btn px-4 py-2 bg-purple-500 text-black rounded w-28 font-bold">Run DFS</button>
+            </div>
+             <div class="flex items-center gap-2">
+                <button onclick="runAI('A*')" class="ai-btn px-4 py-2 bg-pink-500 text-black rounded w-28 font-bold">Run A*</button>
+            </div>
+             <div class="flex items-center gap-2">
+                <button onclick="runAI('Greedy')" class="ai-btn px-4 py-2 bg-teal-500 text-black rounded w-28 font-bold">Run Greedy</button>
+            </div>
+            <button id="reset-maze-btn" class="px-4 py-2 bg-gray-700 text-white font-semibold rounded w-full mt-2">Reset Position</button>
+        </div>
+
+        <div id="maze-container" class="maze-container disabled border-2 border-gray-600 p-1">
+            <div id="maze" class="grid"></div>
+        </div>
+
+        <div class="flex flex-col gap-4 text-sm w-80">
+            <div class="p-3 rounded bg-green-800/20 border border-green-400">
+                <div class="font-bold text-green-400">Your Time:</div>
+                <div><span id="userTime">0.00</span> s</div>
+            </div>
+            <div class="p-3 rounded bg-blue-800/20 border border-blue-400">
+                <div class="font-bold text-blue-400">BFS Time</div>
+                <div><span id="BFS-time">N/A</span></div>
+            </div>
+            <div class="p-3 rounded bg-purple-800/20 border border-purple-400">
+                <div class="font-bold text-purple-400">DFS Time</div>
+                <div><span id="DFS-time">N/A</span></div>
+            </div>
+            <div class="p-3 rounded bg-pink-800/20 border border-pink-400">
+                <div class="font-bold text-pink-400">A* Time</div>
+                <div><span id="A-star-time">N/A</span></div>
+            </div>
+            <div class="p-3 rounded bg-teal-800/20 border border-teal-400">
+                <div class="font-bold text-teal-400">Greedy Time</div>
+                <div><span id="Greedy-time">N/A</span></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Win Message Modal -->
+    <div id="win-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-3xl font-bold text-green-400 mb-4">🎉 Goal Reached! 🎉</h2>
+            <p id="win-message" class="text-lg mb-6"></p>
+            <button id="close-modal-btn" class="px-6 py-2 bg-green-500 text-black font-bold rounded hover:bg-green-400">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const mazeData = {{ maze | tojson | safe }};
+        const rows = {{ rows }};
+        const cols = {{ cols }};
+        const levelKey = `maze_{{ difficulty }}-{{ level }}`;
+        
+        const mazeEl = document.getElementById('maze');
+        const mazeContainer = document.getElementById('maze-container');
+        const userTimeEl = document.getElementById('userTime');
+        const resetMazeBtn = document.getElementById('reset-maze-btn');
+        const startBtn = document.getElementById('start-btn');
+        const winModal = document.getElementById('win-modal');
+        const winMessage = document.getElementById('win-message');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        const containerSize = 560;
+        const cellSize = Math.floor(containerSize / Math.max(rows, cols)) - 1;
+        mazeContainer.style.width = `${cols * (cellSize + 1)}px`;
+        mazeContainer.style.height = `${rows * (cellSize + 1)}px`;
+        mazeEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        mazeEl.style.gap = '1px';
+
+        let playerPos = { y: 0, x: 0 };
+        let userStart = null;
+        let userTimer = null;
+        let playerEl = null;
+        let gameActive = false;
+
+        mazeData.forEach((row, y) => {
+            row.forEach((cell, x) => {
+                const div = document.createElement('div');
+                div.id = `cell-${y}-${x}`;
+                div.style.width = `${cellSize}px`;
+                div.style.height = `${cellSize}px`;
+                div.className = `border-box ${cell === 1 ? 'bg-gray-700' : 'bg-white'}`;
+                mazeEl.appendChild(div);
+            });
+        });
+
+        function createPlayer() {
+            playerEl = document.createElement('div');
+            const playerSize = Math.floor(cellSize * 0.7);
+            playerEl.style.width = `${playerSize}px`;
+            playerEl.style.height = `${playerSize}px`;
+            playerEl.style.marginLeft = `${(cellSize - playerSize) / 2}px`;
+            playerEl.style.marginTop = `${(cellSize - playerSize) / 2}px`;
+            playerEl.className = 'bg-green-500 rounded-full';
+            movePlayer(0, 0);
+        }
+        
+        function movePlayer(y, x) {
+            if (playerEl && playerEl.parentElement) {
+                playerEl.parentElement.removeChild(playerEl);
+            }
+            playerPos = { y, x };
+            document.getElementById(`cell-${playerPos.y}-${playerPos.x}`).appendChild(playerEl);
+        }
+
+        function startUserTimer() {
+            if (!userStart) {
+                gameActive = true;
+                mazeContainer.classList.remove('disabled');
+                startBtn.disabled = true;
+                startBtn.style.opacity = '0.5';
+                userStart = Date.now();
+                userTimer = setInterval(() => {
+                    userTimeEl.innerText = ((Date.now() - userStart) / 1000).toFixed(2);
+                }, 100);
+            }
+        }
+        startBtn.addEventListener('click', startUserTimer);
+        closeModalBtn.addEventListener('click', () => winModal.classList.remove('visible'));
+
+        function resetUserState() {
+            if (userTimer) clearInterval(userTimer);
+            userStart = null;
+            userTimer = null;
+            gameActive = false;
+            mazeContainer.classList.add('disabled');
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+            userTimeEl.innerText = '0.00';
+            movePlayer(0, 0);
+        }
+        resetMazeBtn.addEventListener('click', resetUserState);
+
+        document.addEventListener('keydown', e => {
+            if (!gameActive) return;
+
+            let newY = playerPos.y, newX = playerPos.x;
+            if (e.key === 'ArrowUp') newY--;
+            if (e.key === 'ArrowDown') newY++;
+            if (e.key === 'ArrowLeft') newX--;
+            if (e.key === 'ArrowRight') newX++;
+
+            if (newY >= 0 && newY < rows && newX >= 0 && newX < cols && mazeData[newY][newX] === 0) {
+                movePlayer(newY, newX);
+            }
+            if (newY === rows - 1 && newX === cols - 1) {
+                goalReached();
+            }
+        });
+
+        function goalReached() {
+            if (!gameActive) return;
+            if (userTimer) clearInterval(userTimer);
+            gameActive = false;
+            const timeTaken = userTimeEl.innerText;
+            
+            fetch(`/mark_game_played/${levelKey}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ human_time: timeTaken })
+            });
+            
+            winMessage.textContent = `You reached the goal in ${timeTaken} seconds!`;
+            winModal.classList.add('visible');
+        }
+
+        function runAI(algo) {
+            const algoKey = algo.replace('*','-star');
+            const timeEl = document.getElementById(`${algoKey}-time`);
+            if (timeEl) {
+                timeEl.innerHTML = `Solving...`;
+            }
+            
+            document.querySelectorAll('.ai-btn').forEach(b => b.disabled = true);
+
+            fetch('/solve_maze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ maze: mazeData, algorithm: algo, level_key: levelKey })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (timeEl) timeEl.innerText = parseFloat(data.ai_time).toFixed(9) + 's';
+                animateAI(data.solution, algo);
+                document.querySelectorAll('.ai-btn').forEach(b => b.disabled = false);
+            });
+        }
+        
+        function animateAI(path, algo) {
+            const colorMap = {
+                'BFS': 'rgba(59, 130, 246, 0.5)',
+                'DFS': 'rgba(168, 85, 247, 0.5)',
+                'A*': 'rgba(236, 72, 153, 0.5)',
+                'Greedy': 'rgba(20, 184, 166, 0.5)'
+            };
+            path.forEach(([y, x], idx) => {
+                setTimeout(() => {
+                    const cell = document.getElementById(`cell-${y}-${x}`);
+                    if (cell) cell.style.backgroundColor = colorMap[algo];
+                }, idx * 50);
+            });
+        }
+        
+        createPlayer();
+
+        // Starfield animation
+        const starField = document.getElementById('star-field');
+        if (starField && !starField.hasChildNodes()) {
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 3;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.animationDuration = `${2 + Math.random() * 3}s`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                starField.appendChild(star);
+            }
+        }
+    </script>
+</body>
+</html>

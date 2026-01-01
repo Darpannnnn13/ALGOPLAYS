@@ -1,0 +1,30 @@
+[
+  {
+    "name": "krish tandel",
+    "username": "Krishna_05",
+    "email": "krish05@gmail.com",
+    "password": "krish05",
+    "gender": "Male"
+  },
+  {
+    "name": "darpan meher",
+    "username": "Darpuuuuu_13",
+    "email": "darpanmeher1346@gmail.com",
+    "password": "darpan1346",
+    "gender": "Male"
+  },
+  {
+    "name": "urvesh_23",
+    "username": "uru_23",
+    "email": "urvesh23@gmail.com",
+    "password": "urvesh23",
+    "gender": "Male"
+  },
+  {
+    "name": "sahil",
+    "username": "badshah_02",
+    "email": "sahilghadi_02@gmail.com",
+    "password": "sahil02",
+    "gender": "Male"
+  }
+]

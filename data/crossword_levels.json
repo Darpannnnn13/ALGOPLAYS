@@ -1,0 +1,314 @@
+{
+  "easy": {
+    "1": {
+        "grid": [
+            [1, 1, 1, 1],
+            [1, 0, 1, 0],
+            [1, 1, 1, 0],
+            [0, 1, 0, 0]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "Information", "word": "DATA", "row": 0, "col": 0 },
+                { "number": 2, "clue": "A programming error", "word": "BUG", "row": 2, "col": 0 }
+            ],
+            "down": [
+                { "number": 1, "clue": "To store on disk", "word": "DISK", "row": 0, "col": 0 },
+                { "number": 3, "clue": "Interface for apps (abbr.)", "word": "API", "row": 0, "col": 2 }
+            ]
+        }
+    },
+    "2": {
+        "grid": [
+            [1, 1, 1, 0],
+            [1, 0, 1, 0],
+            [1, 1, 1, 1],
+            [0, 0, 1, 0]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "Computer instructions", "word": "CODE", "row": 0, "col": 0 },
+                { "number": 2, "clue": "A web hyperlink", "word": "LINK", "row": 2, "col": 0 }
+            ],
+            "down": [
+                { "number": 1, "clue": "Web page styling", "word": "CSS", "row": 0, "col": 0 },
+                { "number": 3, "clue": "An HTML element", "word": "TAG", "row": 2, "col": 2 }
+            ]
+        }
+    },
+    "3": {
+        "grid": [
+            [1, 1, 1, 1],
+            [1, 0, 0, 1],
+            [1, 1, 1, 1],
+            [0, 0, 0, 1]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "A person using a system", "word": "USER", "row": 0, "col": 0 },
+                { "number": 3, "clue": "A collection of items", "word": "LIST", "row": 2, "col": 0 }
+            ],
+            "down": [
+                { "number": 1, "clue": "To sign in", "word": "LOGIN", "row": 0, "col": 0 },
+                { "number": 2, "clue": "A computer document", "word": "FILE", "row": 0, "col": 3 }
+            ]
+        }
+    },
+    "4": {
+        "grid": [
+            [1, 1, 1, 1],
+            [0, 1, 0, 0],
+            [1, 1, 1, 1],
+            [0, 1, 0, 0]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "A piece of code that repeats", "word": "LOOP", "row": 0, "col": 0 },
+                { "number": 2, "clue": "Web page markup", "word": "HTML", "row": 2, "col": 0 }
+            ],
+            "down": [
+                { "number": 1, "clue": "Send data to a server", "word": "POST", "row": 0, "col": 1 }
+            ]
+        }
+    },
+    "5": {
+        "grid": [
+            [1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 1]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "Remote server network", "word": "CLOUD", "row": 0, "col": 0 },
+                { "number": 3, "clue": "To give access to others", "word": "SHARE", "row": 2, "col": 0 }
+            ],
+            "down": [
+                { "number": 1, "clue": "A storage unit", "word": "DRIVE", "row": 0, "col": 0 },
+                { "number": 2, "clue": "Keep files updated", "word": "SYNC", "row": 0, "col": 4 }
+            ]
+        }
+    }
+  },
+  "medium": {
+    "1": {
+        "grid": [
+            [1, 1, 1, 1, 0],
+            [1, 0, 1, 0, 0],
+            [1, 1, 1, 1, 1],
+            [0, 0, 1, 0, 1],
+            [0, 0, 1, 1, 1]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "A popular UI library", "word": "REACT", "row": 0, "col": 0 },
+                { "number": 3, "clue": "A blueprint for objects", "word": "CLASS", "row": 2, "col": 0 },
+                { "number": 4, "clue": "A set of rules for communication", "word": "API", "row": 4, "col": 2 }
+            ],
+            "down": [
+                { "number": 1, "clue": "To find and fix errors", "word": "DEBUG", "row": 0, "col": 0 },
+                { "number": 2, "clue": "A temporary data store", "word": "CACHE", "row": 0, "col": 2 },
+                { "number": 3, "clue": "Reliable transfer protocol", "word": "TCP", "row": 2, "col": 4 }
+            ]
+        }
+    },
+    "2": {
+        "grid": [
+            [1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "A server environment for JavaScript", "word": "NODEJS", "row": 0, "col": 0 },
+                { "number": 3, "clue": "Main component of an OS", "word": "KERNEL", "row": 2, "col": 0 },
+                { "number": 4, "clue": "A basic unit of data", "word": "BYTE", "row": 4, "col": 0 }
+            ],
+            "down": [
+                { "number": 1, "clue": "A key-value data structure", "word": "HASHMAP", "row": 0, "col": 0 },
+                { "number": 2, "clue": "Representation with 0s and 1s", "word": "BINARY", "row": 0, "col": 5 }
+            ]
+        }
+    },
+    "3": {
+        "grid": [
+            [0, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 0, 1, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 1, 0, 0, 0, 1],
+            [0, 0, 0, 1, 1, 1, 1, 0]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "A popular scripting language", "word": "PYTHON", "row": 0, "col": 1 },
+                { "number": 4, "clue": "A shortest path algorithm", "word": "DIJKSTRA", "row": 2, "col": 0 },
+                { "number": 6, "clue": "A variable's data category", "word": "TYPE", "row": 4, "col": 3 }
+            ],
+            "down": [
+                { "number": 2, "clue": "An ordered list of elements", "word": "ARRAY", "row": 0, "col": 3 },
+                { "number": 3, "clue": "A problem-solving 'rule of thumb'", "word": "HEURISTIC", "row": 0, "col": 4 },
+                { "number": 5, "clue": "Web styling language", "word": "CSS", "row": 2, "col": 0 }
+            ]
+        }
+    },
+    "4": {
+        "grid": [
+            [1, 1, 1, 1, 1, 0, 0, 0],
+            [1, 0, 1, 0, 1, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 0, 1, 0, 1, 0, 1, 0],
+            [0, 0, 1, 1, 1, 1, 1, 0]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "A request for data", "word": "QUERY", "row": 0, "col": 0 },
+                { "number": 3, "clue": "A step-by-step procedure", "word": "ALGORITHM", "row": 2, "col": 0 },
+                { "number": 5, "clue": "A true or false value", "word": "BOOLEAN", "row": 4, "col": 2 }
+            ],
+            "down": [
+                { "number": 1, "clue": "A software architectural pattern", "word": "BACKEND", "row": 0, "col": 0 },
+                { "number": 2, "clue": "A set of rules for communication", "word": "PROTOCOL", "row": 0, "col": 2 },
+                { "number": 4, "clue": "The structure of a database", "word": "SCHEMA", "row": 2, "col": 4 }
+            ]
+        }
+    },
+    "5": {
+        "grid": [
+            [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+            [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "A program that translates source code", "word": "COMPILER", "row": 0, "col": 0 },
+                { "number": 3, "clue": "Analyzes code for syntax errors", "word": "PARSER", "row": 2, "col": 0 },
+                { "number": 4, "clue": "The grammatical rules of a language", "word": "SYNTAX", "row": 4, "col": 2 }
+            ],
+            "down": [
+                { "number": 1, "clue": "A blueprint for an object", "word": "CLASS", "row": 0, "col": 0 },
+                { "number": 2, "clue": "Hiding implementation details", "word": "ABSTRACTION", "row": 0, "col": 2 }
+            ]
+        }
+    }
+},
+"hard": {
+    "1": {
+        "grid": [
+            [1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+            [1, 0, 1, 0, 0, 1, 0, 1, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 0, 1, 0, 1, 0, 1, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 0, 1]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "When a function calls itself", "word": "RECURSION", "row": 0, "col": 0 },
+                { "number": 4, "clue": "A model inspired by the human brain", "word": "NEURALNET", "row": 2, "col": 0 },
+                { "number": 6, "clue": "Type of machine learning", "word": "SUPERVISED", "row": 4, "col": 0 },
+                { "number": 8, "clue": "The process of training a model", "word": "TRAINING", "row": 6, "col": 0 }
+            ],
+            "down": [
+                { "number": 1, "clue": "A network device", "word": "ROUTER", "row": 0, "col": 0 },
+                { "number": 2, "clue": "A short memo or record", "word": "NOTE", "row": 0, "col": 2 },
+                { "number": 3, "clue": "Data with no predefined labels", "word": "UNLABELED", "row": 0, "col": 5 },
+                { "number": 5, "clue": "An atomic unit of work", "word": "TRANSACTION", "row": 2, "col": 1 },
+                { "number": 7, "clue": "A step-by-step procedure", "word": "ALGORITHM", "row": 4, "col": 9 }
+            ]
+        }
+    },
+    "2": {
+        "grid": [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 1, 0, 0, 1, 0, 0, 1, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "Hiding implementation details", "word": "ABSTRACTION", "row": 0, "col": 0 },
+                { "number": 5, "clue": "A shortest path algorithm", "word": "DIJKSTRA", "row": 2, "col": 0 },
+                { "number": 7, "clue": "Bundling data and methods", "word": "ENCAPSULATION", "row": 4, "col": 0 }
+            ],
+            "down": [
+                { "number": 2, "clue": "A problem-solving 'rule of thumb'", "word": "HEURISTIC", "row": 0, "col": 3 },
+                { "number": 3, "clue": "A true or false value", "word": "BOOLEAN", "row": 0, "col": 4 },
+                { "number": 4, "clue": "A data structure with nodes and edges", "word": "GRAPH", "row": 0, "col": 6 },
+                { "number": 6, "clue": "Last-In, First-Out data structure", "word": "STACK", "row": 2, "col": 9 }
+            ]
+        }
+    },
+    "3": {
+        "grid": [
+            [1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+            [1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1, 0, 0]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "Verifying a user's identity (abbr.)", "word": "AUTH", "row": 0, "col": 0 },
+                { "number": 2, "clue": "Securing data by converting it to code", "word": "ENCRYPTION", "row": 2, "col": 0 },
+                { "number": 5, "clue": "A foundational structure for software", "word": "FRAMEWORK", "row": 4, "col": 0 }
+            ],
+            "down": [
+                { "number": 1, "clue": "A unique digital fingerprint", "word": "HASH", "row": 0, "col": 0 },
+                { "number": 3, "clue": "A distributed ledger technology", "word": "BLOCKCHAIN", "row": 0, "col": 4 },
+                { "number": 4, "clue": "Creating a virtual version of a resource", "word": "VIRTUAL", "row": 0, "col": 7 }
+            ]
+        }
+    },
+    "4": {
+        "grid": [
+            [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+            [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+            [0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "A set of data elements of the same type", "word": "ARRAY", "row": 0, "col": 0 },
+                { "number": 4, "clue": "A data structure that stores items in order", "word": "LINKEDLIST", "row": 2, "col": 0 },
+                { "number": 7, "clue": "A tree where each node has at most two children", "word": "BINARYTREE", "row": 4, "col": 0 }
+            ],
+            "down": [
+                { "number": 2, "clue": "First-In, First-Out data structure", "word": "QUEUE", "row": 0, "col": 2 },
+                { "number": 3, "clue": "A self-balancing binary search tree", "word": "AVLTREE", "row": 0, "col": 4 },
+                { "number": 5, "clue": "A collection of key-value pairs", "word": "DICTIONARY", "row": 2, "col": 1 },
+                { "number": 6, "clue": "A special tree-based data structure", "word": "HEAP", "row": 2, "col": 7 }
+            ]
+        }
+    },
+    "5": {
+        "grid": [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        ],
+        "clues": {
+            "across": [
+                { "number": 1, "clue": "A measure of an algorithm's efficiency", "word": "COMPLEXITY", "row": 0, "col": 0 },
+                { "number": 6, "clue": "Asymptotic notation for upper bound", "word": "BIG-O", "row": 2, "col": 0 },
+                { "number": 8, "clue": "Asymptotic notation for lower bound", "word": "OMEGA", "row": 4, "col": 0 }
+            ],
+            "down": [
+                { "number": 2, "clue": "An algorithm with O(n^2) complexity", "word": "QUADRATIC", "row": 0, "col": 2 },
+                { "number": 3, "clue": "An algorithm with O(log n) complexity", "word": "LOGARITHMIC", "row": 0, "col": 4 },
+                { "number": 4, "clue": "An algorithm with O(n) complexity", "word": "LINEAR", "row": 0, "col": 7 },
+                { "number": 5, "clue": "An algorithm with O(1) complexity", "word": "CONSTANT", "row": 0, "col": 8 },
+                { "number": 7, "clue": "Asymptotic notation for tight bound", "word": "THETA", "row": 2, "col": 9 }
+            ]
+        }
+    }
+}
+}

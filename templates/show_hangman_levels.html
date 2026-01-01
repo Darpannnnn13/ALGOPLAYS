@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hangman Levels</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+
+<body class="bg-gray-900 text-white p-10 min-h-screen flex flex-col">
+
+  <h1 class="text-4xl mb-10 font-bold text-green-400">Select a Hangman Level</h1>
+
+  <div id="levelsContainer" class="grid grid-cols-2 md:grid-cols-5 gap-6 flex-grow"></div>
+
+  <div class="mt-10">
+    <a href="/hangman" class="inline-block px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded text-white font-semibold transition">
+      ⬅️ Back to Hangman
+    </a>
+  </div>
+
+  <script>
+    const playedLevels = {{ played_levels | tojson | safe }};
+    const difficulties = ['easy', 'medium', 'hard'];
+    const colors = {
+      easy: 'bg-green-500 hover:bg-green-400',
+      medium: 'bg-yellow-500 hover:bg-yellow-400',
+      hard: 'bg-red-500 hover:bg-red-400',
+    };
+    const container = document.getElementById('levelsContainer');
+
+    difficulties.forEach(diff => {
+      for (let i = 1; i <= 5; i++) {
+        const key = `hangman_${diff}-${i}`;
+        const data = playedLevels[key];
+        
+        let statsHtml = '';
+        let starIcon = '<i class="far fa-star text-black text-xl mt-2"></i>'; // Default empty star for unplayed
+
+        if (data && data.status) {
+            const isWin = data.status === 'won';
+            starIcon = isWin 
+                ? '<i class="fas fa-star text-black text-xl mt-2"></i>' // Solid star for win
+                : '<i class="far fa-star text-black text-xl mt-2"></i>'; // Empty star for loss
+
+            const timeStat = `<div class="text-xs bg-white/40 rounded px-2 py-0.5 mb-1">⏰ Time: ${data.time_taken.toFixed(2)}s</div>`;
+            const guessStat = `<div class="text-xs bg-white/40 rounded px-2 py-0.5 mb-1">❌ Guesses: ${data.incorrect_guesses}</div>`;
+            statsHtml = `<div class="flex flex-col items-start mt-2 w-full pl-2">${timeStat}${guessStat}</div>`;
+        }
+
+        const link = document.createElement('a');
+        link.href = `/level/hangman/${diff}/${i}`;
+        link.className = `flex flex-col items-center justify-center p-4 rounded-lg ${colors[diff]} text-black font-semibold transition`;
+
+        link.innerHTML = `
+          <span class="text-lg font-bold">${diff.toUpperCase()} Level ${i}</span>
+          ${starIcon}
+          ${statsHtml}
+        `;
+        container.appendChild(link);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>AI Algorithm Animation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', sans-serif; background: #0C0A1A; }
+        .title-font { font-family: 'Orbitron', sans-serif; }
+        .algo-canvas { background: #18122B; border-radius: 1rem; box-shadow: 0 0 24px #10B98133; }
+        .step-btn { background: #10B981; color: #18122B; font-weight: bold; }
+        .step-btn:disabled { background: #444; color: #aaa; }
+    </style>
+</head>
+<body class="text-white min-h-screen flex flex-col items-center justify-center">
+    <div class="max-w-3xl w-full mx-auto p-6">
+        <h1 class="title-font text-4xl text-green-400 mb-6 text-center">AI Algorithm Animation</h1>
+        <div class="mb-6 text-center text-sm text-gray-300">
+            This page shows a plain, text-only explanation for algorithms. Open it using query parameters e.g. <code>?game=maze&algo=bfs</code>, or navigate from the home explanations.
+        </div>
+        <div class="bg-gray-900 border border-green-500/20 rounded-lg p-6 mt-6 text-gray-200">
+            <div id="intro-text" class="text-center text-lg text-gray-300 mb-4">Select a game and algorithm (or open using <code>?game=&lt;game&gt;&amp;algo=&lt;algorithm&gt;</code>) to view the algorithm explanation.</div>
+
+            <div id="explanation-content" class="space-y-6">
+                <!-- Name + Description -->
+                <div id="algo-header">
+                    <h2 id="algo-name" class="text-2xl font-bold text-green-400 title-font"></h2>
+                    <p id="algo-desc" class="text-gray-300 mt-2"></p>
+                </div>
+
+                <!-- Analogy -->
+                <div id="algo-analogy" class="text-sm italic text-gray-400"></div>
+
+                <!-- Technical details -->
+                <div id="algo-technical" class="text-sm text-gray-300"></div>
+
+                <!-- Advantages / Disadvantages -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-lg text-green-300 font-semibold">Advantages</h4>
+                        <ul id="algo-advantages" class="list-disc list-inside text-gray-300 mt-2"></ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg text-red-300 font-semibold">Disadvantages</h4>
+                        <ul id="algo-disadvantages" class="list-disc list-inside text-gray-300 mt-2"></ul>
+                    </div>
+                </div>
+
+                <!-- Game-specific how_it_works -->
+                <div id="game-specific" class="pt-4 border-t border-gray-700 text-gray-300">
+                    <h4 id="game-specific-title" class="text-lg font-semibold text-green-400 mb-2"></h4>
+                    <ul id="how-it-works" class="list-disc list-inside text-sm"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    // No visual animations — this page is text-only and driven by /api/explanations
+
+    // populate page content with textual explanation from /api/explanations
+    (async function() {
+        try {
+            const resp = await fetch('/api/explanations');
+            const data = await resp.json();
+
+            // normalize incoming params (e.g. a* -> astar, ac-3 -> ac3)
+            function normalizeAlgo(a) {
+                if (!a) return a;
+                return a.toLowerCase().replace(/\*/g,'star').replace(/-/g,'').replace('star','astar') === 'astar' ? 'astar' : a.toLowerCase().replace(/[-_]/g,'');
+            }
+
+            const g = (preselectGame || '').toLowerCase();
+            const a = normalizeAlgo(preselectAlgo || '');
+
+            if (!g || !a || !data[g] || !data[g][a]) {
+                document.getElementById('intro-text').textContent = 'No explanation found for the requested game/algorithm. Use ?game=maze&algo=bfs or visit the home explanation panel.';
+                return;
+            }
+
+            const info = data[g][a];
+            document.getElementById('algo-name').textContent = info.name || (a.toUpperCase());
+            document.getElementById('algo-desc').textContent = info.description || '';
+            document.getElementById('algo-analogy').textContent = info.analogy ? `"${info.analogy}"` : '';
+
+            // technical details
+            const tech = [];
+            if (info.core_mechanism) tech.push(`<strong>Core mechanism:</strong> ${info.core_mechanism}`);
+            if (info.time_complexity) tech.push(`<strong>Time complexity:</strong> <code>${info.time_complexity}</code>`);
+            if (info.space_complexity) tech.push(`<strong>Space complexity:</strong> <code>${info.space_complexity}</code>`);
+            document.getElementById('algo-technical').innerHTML = tech.join('<br/>');
+
+            const advantages = document.getElementById('algo-advantages'); advantages.innerHTML = '';
+            (info.advantages || []).forEach(it => { const li = document.createElement('li'); li.textContent = it; advantages.appendChild(li); });
+
+            const disadvantages = document.getElementById('algo-disadvantages'); disadvantages.innerHTML = '';
+            (info.disadvantages || []).forEach(it => { const li = document.createElement('li'); li.textContent = it; disadvantages.appendChild(li); });
+
+            // how it works for this specific game
+            document.getElementById('game-specific-title').textContent = `How it works (${(g||'').replace(/_/g,' ').replace(/\b\w/g, ch => ch.toUpperCase())})`;
+            const how = document.getElementById('how-it-works'); how.innerHTML = '';
+            (info.how_it_works || []).forEach(s => { const li = document.createElement('li'); li.textContent = s; how.appendChild(li); });
+
+            // small indicator
+            document.getElementById('intro-text').textContent = `Showing explanation for ${g.replace(/_/g,' ')} — ${info.name || a.toUpperCase()}`;
+        } catch (err) {
+            console.error('Failed to load explanations', err);
+            document.getElementById('intro-text').textContent = 'Failed to load explanation data from the server.';
+        }
+    })();
+    </script>
+</body>
+</html>

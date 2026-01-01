@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Crossword | {{ difficulty.upper() }} Level {{ level }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .crossword-grid { display: grid; gap: 1px; background-color: #000; border: 2px solid #000; }
+        .grid-cell { position: relative; width: 45px; height: 45px; background-color: #1A202C; }
+        .grid-cell.black { background-color: #000; }
+        .grid-cell input { width: 100%; height: 100%; text-align: center; background: transparent; border: 1px solid #4A5568; color: white; font-size: 1.5rem; text-transform: uppercase; outline: none; transition: background-color 0.2s; }
+        .grid-cell input:focus { background-color: #2D3748; }
+        .grid-cell input.incorrect { background-color: #9B2C2C; } /* Red for incorrect */
+        .grid-cell .clue-number { position: absolute; top: 2px; left: 3px; font-size: 0.7rem; color: #A0AEC0; user-select: none; }
+        .clue-list { max-height: 450px; overflow-y: auto; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-6">
+
+    <div class="text-center mb-6">
+        <h1 class="text-4xl font-bold text-green-400">Crossword Puzzle</h1>
+        <h2 class="text-2xl text-gray-400">{{ difficulty.capitalize() }} Level {{ level }}</h2>
+    </div>
+
+    <div class="flex justify-center gap-4 mb-4">
+        <a href="/crossword/levels" class="px-4 py-2 bg-blue-500 text-black rounded font-bold hover:bg-blue-400">⬅️ Levels</a>
+        <button id="start-btn" class="px-4 py-2 bg-green-500 text-black rounded font-bold hover:bg-green-400">▶️ Start Play</button>
+        <button id="reset-btn" class="px-4 py-2 bg-orange-500 text-black rounded font-bold hover:bg-orange-400 disabled:opacity-50" disabled>Reset Grid</button>
+        <button id="check-btn" class="px-4 py-2 bg-yellow-500 text-black rounded font-bold hover:bg-yellow-400 disabled:opacity-50" disabled>Check Answers</button>
+        
+        {% if next_level_data %}
+            <a href="{{ url_for('play_crossword_level', difficulty=next_level_data.difficulty, level=next_level_data.level) }}"
+               id="next-level-btn"
+               class="px-4 py-2 bg-purple-500 text-black rounded font-bold hover:bg-purple-400"
+               style="display: none;"> Next Level ➡️
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="flex flex-row justify-center gap-8 items-start max-w-7xl mx-auto">
+        <div class="w-1/4">
+            <h3 class="text-2xl font-bold text-green-400 mb-2">Across</h3>
+            <ul id="across-clues" class="clue-list space-y-1 text-gray-300"></ul>
+        </div>
+        
+        <div class="flex flex-col items-center">
+            <div id="crossword-grid" class="crossword-grid"></div>
+            <div class="mt-4 p-3 rounded bg-gray-800 border border-gray-600">
+                <div class="font-bold text-yellow-400">Your Time</div>
+                <div><span id="user-time">0.00s</span></div>
+            </div>
+        </div>
+
+        <div class="w-1/4">
+            <h3 class="text-2xl font-bold text-green-400 mb-2">Down</h3>
+            <ul id="down-clues" class="clue-list space-y-1 text-gray-300"></ul>
+        </div>
+    </div>
+
+    <script>
+        const levelData = {{ level_data | tojson }};
+        const gridData = levelData.grid;
+        const acrossClues = levelData.clues.across;
+        const downClues = levelData.clues.down;
+        const levelKey = `crossword_{{ difficulty }}-{{ level }}`;
+
+        const gridEl = document.getElementById('crossword-grid');
+        const acrossCluesEl = document.getElementById('across-clues');
+        const downCluesEl = document.getElementById('down-clues');
+        const userTimeEl = document.getElementById('user-time');
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const checkBtn = document.getElementById('check-btn');
+        
+        let userTimer;
+        let gameStarted = false;
+        let startTime;
+
+        function renderGrid() {
+            // ... (no changes in this function)
+            gridEl.innerHTML = '';
+            const rows = gridData.length;
+            const cols = gridData[0].length;
+            gridEl.style.gridTemplateColumns = `repeat(${cols}, 45px)`;
+            
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    if (gridData[r][c] === 0) {
+                        cell.classList.add('black');
+                    } else {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.maxLength = 1;
+                        input.dataset.row = r;
+                        input.dataset.col = c;
+                        input.disabled = true;
+                        cell.appendChild(input);
+                    }
+                    gridEl.appendChild(cell);
+                }
+            }
+        }
+        
+        function renderClues() {
+            // ... (no changes in this function)
+            const clueMap = {};
+            acrossClues.forEach(clue => {
+                acrossCluesEl.innerHTML += `<li><b>${clue.number}.</b> ${clue.clue}</li>`;
+                clueMap[`${clue.row}-${clue.col}`] = clue.number;
+            });
+            downClues.forEach(clue => {
+                downCluesEl.innerHTML += `<li><b>${clue.number}.</b> ${clue.clue}</li>`;
+                clueMap[`${clue.row}-${clue.col}`] = clue.number;
+            });
+
+            Object.keys(clueMap).forEach(key => {
+                const [r, c] = key.split('-');
+                const cellIndex = parseInt(r) * gridData[0].length + parseInt(c);
+                const cell = gridEl.children[cellIndex];
+                if (cell && !cell.classList.contains('black')) {
+                    const numberSpan = document.createElement('span');
+                    numberSpan.className = 'clue-number';
+                    numberSpan.textContent = clueMap[key];
+                    cell.prepend(numberSpan);
+                }
+            });
+        }
+
+        function startGame() {
+            // ... (no changes in this function)
+            if (gameStarted) return;
+            gameStarted = true;
+            
+            document.querySelectorAll('.grid-cell input').forEach(input => input.disabled = false);
+            checkBtn.disabled = false;
+            resetBtn.disabled = false;
+            startBtn.disabled = true;
+            startBtn.style.opacity = '0.5';
+            
+            startTime = Date.now();
+            userTimer = setInterval(() => {
+                if (gameStarted) {
+                    userTimeEl.textContent = ((Date.now() - startTime) / 1000).toFixed(2) + 's';
+                }
+            }, 100);
+        }
+
+        function resetGame() {
+            // ... (no changes in this function)
+            clearInterval(userTimer);
+            gameStarted = false;
+            userTimeEl.textContent = '0.00s';
+
+            document.querySelectorAll('.grid-cell input').forEach(input => {
+                input.value = '';
+                input.disabled = true;
+                input.classList.remove('incorrect');
+            });
+
+            checkBtn.disabled = true;
+            resetBtn.disabled = true;
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+        }
+
+        function checkAnswers() {
+            // ... (no changes in this function)
+            let totalRequired = 0;
+            let allCorrect = true;
+            let filledCells = 0;
+
+            const solutionMap = {}; // Maps "row-col" to the correct character
+            acrossClues.forEach(clue => {
+                for (let i = 0; i < clue.word.length; i++) {
+                    const key = `${clue.row}-${clue.col + i}`;
+                    if (!solutionMap[key] || solutionMap[key] === clue.word[i]) solutionMap[key] = clue.word[i];
+                }
+            });
+             downClues.forEach(clue => {
+                for (let i = 0; i < clue.word.length; i++) {
+                    const key = `${clue.row + i}-${clue.col}`;
+                    if (!solutionMap[key] || solutionMap[key] === clue.word[i]) solutionMap[key] = clue.word[i];
+                }
+            });
+
+            totalRequired = Object.keys(solutionMap).length;
+
+            document.querySelectorAll('.grid-cell input').forEach(input => {
+                const r = input.dataset.row;
+                const c = input.dataset.col;
+                const key = `${r}-${c}`;
+                const userChar = input.value.toUpperCase();
+                const correctChar = solutionMap[key];
+                
+                if (userChar) {
+                    filledCells++;
+                }
+
+                if (userChar && userChar !== correctChar) {
+                    allCorrect = false;
+                    input.classList.add('incorrect');
+                } else {
+                    input.classList.remove('incorrect');
+                }
+            });
+
+            if (allCorrect && filledCells === totalRequired) {
+                clearInterval(userTimer);
+                gameStarted = false;
+                const finalTime = userTimeEl.textContent;
+                fetch(`/mark_game_played/${levelKey}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ human_time: finalTime.replace('s','') })
+                });
+                alert(`Congratulations! You solved the puzzle in ${finalTime}.`);
+
+                // --- ADD THIS LOGIC ---
+                // Disable the grid so it can't be changed
+                document.querySelectorAll('.grid-cell input').forEach(input => input.disabled = true);
+                
+                // Hide the check button and show the next level button (if it exists)
+                checkBtn.style.display = 'none';
+                checkBtn.disabled = true;
+                const nextBtn = document.getElementById('next-level-btn');
+                if (nextBtn) {
+                    nextBtn.style.display = 'inline-block';
+                }
+            } else if (filledCells < totalRequired) {
+                alert('The puzzle is not complete. Please fill in all the cells.');
+            } else { // This means it's full, but has errors
+                alert('Some answers are incorrect. They are marked in red.');
+            }
+        }
+
+        startBtn.addEventListener('click', startGame);
+        resetBtn.addEventListener('click', resetGame);
+        checkBtn.addEventListener('click', checkAnswers);
+
+        renderGrid();
+        renderClues();
+    </script>
+</body>
+</html>
